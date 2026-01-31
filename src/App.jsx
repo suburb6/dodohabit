@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Privacy from './pages/Privacy';
 import Feedback from './pages/Feedback';
 import Terms from './pages/Terms';
+import DeleteAccount from './pages/DeleteAccount';
 
 const App = () => {
     useEffect(() => {
@@ -48,6 +49,7 @@ const App = () => {
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route path="/feedback" element={<Feedback />} />
+                        <Route path="/delete-account" element={<DeleteAccount />} />
                     </Routes>
                 </main>
                 <Footer />
