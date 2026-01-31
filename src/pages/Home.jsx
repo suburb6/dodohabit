@@ -12,6 +12,12 @@ import {
     Calendar
 } from 'lucide-react';
 
+import habitListsImg from '../assets/screenshots/habit-lists.jpg';
+import autoTrackingImg from '../assets/screenshots/auto-fitness-analytics.jpg';
+import heatmapsImg from '../assets/screenshots/heatmaps.jpg';
+import customGoalsImg from '../assets/screenshots/custom-habit.jpg';
+import yourThemeImg from '../assets/screenshots/custom-appearance.jpg';
+
 const Home = () => {
     const [isAppStoreFlipped, setIsAppStoreFlipped] = useState(false);
 
@@ -32,7 +38,7 @@ const Home = () => {
             title: "HABIT LISTS",
             subtitle: "Stay organized.",
             color: "from-[#FF5733] to-[#C13615]",
-            image: "habit-lists.jpg",
+            image: habitListsImg,
             mockupBg: "bg-white",
             imageClass: "translate-y-2"
         },
@@ -40,21 +46,21 @@ const Home = () => {
             title: "AUTO TRACKING",
             subtitle: "Steps & Analytics.",
             color: "from-[#3B82F6] to-[#1D4ED8]",
-            image: "auto-fitness-analytics.jpg",
+            image: autoTrackingImg,
             mockupBg: "bg-white"
         },
         {
             title: "HEATMAPS",
             subtitle: "Visualize streaks.",
             color: "from-[#A855F7] to-[#7E22CE]",
-            image: "heatmaps.jpg",
+            image: heatmapsImg,
             mockupBg: "bg-white"
         },
         {
             title: "CUSTOM GOALS",
             subtitle: "Tailor your success.",
             color: "from-[#22C55E] to-[#15803D]",
-            image: "custom-habit.jpg",
+            image: customGoalsImg,
             mockupBg: "bg-white",
             imageClass: "translate-y-0"
         },
@@ -62,7 +68,7 @@ const Home = () => {
             title: "YOUR THEME",
             subtitle: "Make it yours.",
             color: "from-[#EC4899] to-[#BE185D]",
-            image: "custom-appearance.jpg",
+            image: yourThemeImg,
             mockupBg: "bg-[#27272A]",
             hideHeader: false,
             imageClass: "translate-y-0"
@@ -277,7 +283,7 @@ const Home = () => {
 
                                         <div className={`relative w-[220px] h-full ${item.mockupBg} rounded-t-[30px] border-[8px] border-b-0 border-gray-900 shadow-2xl flex flex-col overflow-hidden ${item.containerClass || 'translate-y-8'}`}>
                                             <img
-                                                src={`/screenshots/${item.image}`}
+                                                src={item.image}
                                                 alt={item.title}
                                                 draggable={false}
                                                 className={`w-full h-full object-cover object-top ${item.imageClass || 'translate-y-3'} select-none`}
@@ -334,7 +340,7 @@ const Home = () => {
 
                                     <div className={`relative w-[220px] h-full ${item.mockupBg} rounded-t-[30px] border-[8px] border-b-0 border-gray-900 shadow-2xl flex flex-col overflow-hidden ${item.containerClass || 'translate-y-8'}`}>
                                         <img
-                                            src={`/screenshots/${item.image}`}
+                                            src={item.image}
                                             alt={item.title}
                                             draggable={false}
                                             className={`w-full h-full object-cover object-top ${item.imageClass || 'translate-y-3'} select-none`}
