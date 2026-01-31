@@ -32,7 +32,7 @@ const Home = () => {
             title: "HABIT LISTS",
             subtitle: "Stay organized.",
             color: "from-[#FF5733] to-[#C13615]",
-            image: "Habit lists.jpg",
+            image: "habit-lists.jpg",
             mockupBg: "bg-white",
             imageClass: "translate-y-2"
         },
@@ -40,21 +40,21 @@ const Home = () => {
             title: "AUTO TRACKING",
             subtitle: "Steps & Analytics.",
             color: "from-[#3B82F6] to-[#1D4ED8]",
-            image: "Auto fitness + analytics.jpg",
+            image: "auto-fitness-analytics.jpg",
             mockupBg: "bg-white"
         },
         {
             title: "HEATMAPS",
             subtitle: "Visualize streaks.",
             color: "from-[#A855F7] to-[#7E22CE]",
-            image: "Heatmaps.jpg",
+            image: "heatmaps.jpg",
             mockupBg: "bg-white"
         },
         {
             title: "CUSTOM GOALS",
             subtitle: "Tailor your success.",
             color: "from-[#22C55E] to-[#15803D]",
-            image: "Customisable habit.jpg",
+            image: "custom-habit.jpg",
             mockupBg: "bg-white",
             imageClass: "translate-y-0"
         },
@@ -62,7 +62,7 @@ const Home = () => {
             title: "YOUR THEME",
             subtitle: "Make it yours.",
             color: "from-[#EC4899] to-[#BE185D]",
-            image: "Customisable appearance.jpg",
+            image: "custom-appearance.jpg",
             mockupBg: "bg-[#27272A]",
             hideHeader: false,
             imageClass: "translate-y-0"
