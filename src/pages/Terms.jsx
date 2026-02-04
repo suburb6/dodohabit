@@ -6,7 +6,7 @@ import { ArrowLeft, Scale } from 'lucide-react';
 
 const Terms = () => {
     return (
-        <div className="min-h-screen text-white font-sans selection:bg-blue-500 selection:text-white flex flex-col">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
             <main className="flex-1 pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -17,8 +17,8 @@ const Terms = () => {
                         <h1 className="text-4xl font-extrabold tracking-tight">Terms and Conditions</h1>
                     </div>
 
-                    <div className="prose prose-invert prose-lg max-w-none text-gray-300">
-                        <p className="text-xl text-gray-400 mb-8">
+                    <div className="prose dark:prose-invert prose-lg max-w-none text-[var(--text-secondary)]">
+                        <p className="text-xl text-[var(--text-secondary)] mb-8">
                             Last updated: January 30, 2026
                         </p>
 
@@ -27,7 +27,7 @@ const Terms = () => {
                         </p>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms & Eligibility</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">1. Acceptance of Terms & Eligibility</h2>
                             <p className="mb-4">By accessing DodoHabit, you agree to these Terms.</p>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>Age Requirement:</strong> You must be at least 13 years of age to use this App.</li>
@@ -36,12 +36,12 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-white mb-4">2. No Medical Advice (CRITICAL)</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">2. No Medical Advice (CRITICAL)</h2>
                             <p className="mb-4">
-                                <strong className="text-white">DODOHABIT IS A PRODUCTIVITY TOOL ONLY.</strong> It is not a medical device and does not provide medical advice, diagnosis, or treatment.
+                                <strong className="text-[var(--text-primary)]">DODOHABIT IS A PRODUCTIVITY TOOL ONLY.</strong> It is not a medical device and does not provide medical advice, diagnosis, or treatment.
                             </p>
                             <p>
-                                Step tracking and habit suggestions are for informational purposes only. The App does not monitor heart conditions or physiological emergencies. Always consult a qualified healthcare provider before starting any new fitness routine. <strong className="text-white">Never disregard professional medical advice because of something you read in the App.</strong>
+                                Step tracking and habit suggestions are for informational purposes only. The App does not monitor heart conditions or physiological emergencies. Always consult a qualified healthcare provider before starting any new fitness routine. <strong className="text-[var(--text-primary)]">Never disregard professional medical advice because of something you read in the App.</strong>
                             </p>
                         </section>
 
@@ -69,8 +69,8 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-white mb-4">6. Limitation of Liability</h2>
-                            <p className="mb-4 text-gray-400">TO THE MAXIMUM EXTENT PERMITTED BY LAW, DODOHABIT IS PROVIDED "AS IS." WE ARE NOT LIABLE FOR:</p>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">6. Limitation of Liability</h2>
+                            <p className="mb-4 text-[var(--text-secondary)] font-bold">TO THE MAXIMUM EXTENT PERMITTED BY LAW, DODOHABIT IS PROVIDED "AS IS." WE ARE NOT LIABLE FOR:</p>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>SENSOR INACCURACY:</strong> Errors in step counting or motion detection.</li>
                                 <li><strong>DATA LOSS:</strong> Failure of cloud sync or accidental deletion of local data.</li>
@@ -80,7 +80,7 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-white mb-4">7. Account Termination & Deletion</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">7. Account Termination & Deletion</h2>
                             <p>
                                 We reserve the right to terminate accounts that misuse the service. You may delete your account and all associated cloud data at any time via the "Delete Account" button in Settings.
                             </p>
@@ -110,7 +110,7 @@ const Terms = () => {
                             </p>
                         </section>
 
-                        <hr className="border-white/10 my-10" />
+                        <hr className="border-[var(--border-color)] my-10" />
 
                         <p className="text-sm text-gray-500 italic">
                             Ownership: DodoHabit, its branding, and all assets are the property of the DodoHabit Developer Team.

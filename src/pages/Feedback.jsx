@@ -5,7 +5,7 @@ import { Mail } from 'lucide-react';
 
 const Feedback = () => {
     return (
-        <div className="min-h-screen text-white font-sans selection:bg-blue-500 selection:text-white flex flex-col">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
             <main className="flex-1 pt-32 pb-20 px-4 md:px-8 max-w-2xl mx-auto text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -13,7 +13,7 @@ const Feedback = () => {
                     transition={{ duration: 0.5 }}
                 >
                     <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Feedback</h1>
-                    <p className="text-lg text-gray-400 mb-10">
+                    <p className="text-lg text-[var(--text-secondary)] mb-10">
                         Help us make DodoHabit better for everyone.
                     </p>
 

@@ -11,11 +11,26 @@
   },
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",
+    "@tiptap/extension-image": "^3.18.0",
+    "@tiptap/extension-link": "^3.18.0",
+    "@tiptap/extension-placeholder": "^3.18.0",
+    "@tiptap/extension-table": "^3.18.0",
+    "@tiptap/extension-table-cell": "^3.18.0",
+    "@tiptap/extension-table-header": "^3.18.0",
+    "@tiptap/extension-table-row": "^3.18.0",
+    "@tiptap/extension-text-align": "^3.18.0",
+    "@tiptap/extension-underline": "^3.18.0",
+    "@tiptap/react": "^3.18.0",
+    "@tiptap/starter-kit": "^3.18.0",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.8.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.13.0"
+    "react-helmet-async": "^2.0.5",
+    "react-router-dom": "^7.13.0",
+    "reading-time-estimator": "^2.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

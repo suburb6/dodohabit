@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import {
     Download,
     Activity,
@@ -20,6 +21,7 @@ import yourThemeImg from '../assets/screenshots/custom-appearance.jpg';
 
 const Home = () => {
     const [isAppStoreFlipped, setIsAppStoreFlipped] = useState(false);
+    const [isPlayStoreFlipped, setIsPlayStoreFlipped] = useState(false);
 
     // Auto-flip back after 2 seconds
     useEffect(() => {
@@ -30,6 +32,15 @@ const Home = () => {
             return () => clearTimeout(timer);
         }
     }, [isAppStoreFlipped]);
+
+    useEffect(() => {
+        if (isPlayStoreFlipped) {
+            const timer = setTimeout(() => {
+                setIsPlayStoreFlipped(false);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [isPlayStoreFlipped]);
 
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -84,7 +95,7 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen text-white font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden transition-colors duration-300">
 
 
             <main className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
@@ -97,7 +108,7 @@ const Home = () => {
                         className="mb-6"
                     >
                         <span className="px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-xs font-medium tracking-wide">
-                            V 1.0 IS LIVE
+                            COMING SOON
                         </span>
                     </motion.div>
 
@@ -117,7 +128,7 @@ const Home = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg md:text-xl text-gray-400 max-w-2xl mb-12"
+                        className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mb-12"
                     >
                         The all-in-one habit tracker with auto step counting, heatmaps,
                         and smart analytics. Build positive habits or break bad ones.
@@ -131,24 +142,48 @@ const Home = () => {
                         className="flex flex-wrap items-center justify-center gap-4 mb-20 select-none"
                     >
                         {/* Play Store Button */}
-                        <motion.a
-                            href="#"
+                        <motion.div
+                            className="relative w-[180px] h-[54px] cursor-pointer perspective-1000"
+                            onClick={() => setIsPlayStoreFlipped(true)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="bg-[#1a1a1a] border border-white/10 rounded-xl w-[180px] h-[54px] flex items-center justify-center gap-3 transition-colors hover:bg-[#252525]"
-                            draggable="false"
                         >
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg"
-                                alt="Play Store"
-                                className="w-6 h-6"
-                                draggable="false"
-                            />
-                            <div className="text-left">
-                                <div className="text-[10px] uppercase font-bold tracking-wider text-gray-400">GET IT ON</div>
-                                <div className="text-sm font-bold text-white leading-none">Google Play</div>
-                            </div>
-                        </motion.a>
+                            <motion.div
+                                className="w-full h-full relative"
+                                initial={false}
+                                animate={{ rotateX: isPlayStoreFlipped ? 180 : 0 }}
+                                transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+                                style={{ transformStyle: "preserve-3d" }}
+                            >
+                                {/* Front Face */}
+                                <div
+                                    className="absolute inset-0 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm"
+                                    style={{ backfaceVisibility: "hidden" }}
+                                >
+                                    <img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg"
+                                        alt="Play Store"
+                                        className="w-6 h-6"
+                                        draggable="false"
+                                    />
+                                    <div className="text-left">
+                                        <div className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">GET IT ON</div>
+                                        <div className="text-sm font-bold text-[var(--text-primary)] leading-none">Google Play</div>
+                                    </div>
+                                </div>
+
+                                {/* Back Face */}
+                                <div
+                                    className="absolute inset-0 bg-[#FF5733] rounded-xl flex items-center justify-center border border-[#FF5733]"
+                                    style={{
+                                        backfaceVisibility: "hidden",
+                                        transform: "rotateX(180deg)"
+                                    }}
+                                >
+                                    <span className="text-white font-bold tracking-wide">Coming Soon!</span>
+                                </div>
+                            </motion.div>
+                        </motion.div>
 
                         {/* App Store Button */}
                         <motion.div
@@ -166,17 +201,17 @@ const Home = () => {
                             >
                                 {/* Front Face */}
                                 <div
-                                    className="absolute inset-0 bg-[#1a1a1a] hover:bg-[#252525] border border-white/10 rounded-xl flex items-center justify-center gap-3 transition-colors"
+                                    className="absolute inset-0 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm"
                                     style={{ backfaceVisibility: "hidden" }}
                                 >
                                     <div className="w-6 h-6 flex items-center justify-center">
-                                        <svg viewBox="0 0 384 512" fill="white" className="w-7 h-7">
+                                        <svg viewBox="0 0 384 512" fill="currentColor" className="w-7 h-7 text-[var(--text-primary)]">
                                             <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 46.9 126.7 98 126.7 6.6 0 14-2.2 20.6-5.4 15-7.2 34-15 57.5-15 23.9 0 46.9 8.7 57.5 14.7 6.9 3.9 14.3 5.4 20.6 5.4 53.9 0 76.3-89.2 88.5-125.7-52.7-22.1-73.4-56.3-72.3-102.3zm-77-175.7c25.4-25.4 46-56.8 40.4-89-21.5 0-47.3 14.4-61.1 27.9-19.1 18.2-34.9 49.3-29.2 82.3 26 0 35.8-9 50-21.2z" />
                                         </svg>
                                     </div>
                                     <div className="text-left">
-                                        <div className="text-[10px] uppercase font-bold tracking-wider text-gray-400">GET IT ON</div>
-                                        <div className="text-sm font-bold text-white leading-none">App Store</div>
+                                        <div className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">GET IT ON</div>
+                                        <div className="text-sm font-bold text-[var(--text-primary)] leading-none">App Store</div>
                                     </div>
                                 </div>
 
