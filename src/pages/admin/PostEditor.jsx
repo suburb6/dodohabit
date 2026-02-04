@@ -20,7 +20,6 @@ const PostEditor = () => {
         featuredImage: null,
         status: 'draft',
         slug: '',
-        slug: '',
         publishedAt: null,
         authorName: '',
         authorTitle: ''
