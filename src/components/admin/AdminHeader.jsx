@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
-const AdminHeader = ({ title, status, uploading, actions, showBack }) => {
+const AdminHeader = ({ title, status = null, uploading = false, actions = null, showBack = false }) => {
     const navigate = useNavigate();
 
     return (

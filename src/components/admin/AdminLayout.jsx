@@ -36,6 +36,7 @@ const AdminLayout = () => {
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
+    /** @param {{ to: string, icon: any, label: string, activeCheck?: string }} props */
     const NavItem = ({ to, icon: Icon, label, activeCheck }) => (
         <Link
             to={to}

@@ -5,8 +5,8 @@ import { useLocation } from 'react-router-dom';
 const SEO = ({
     title,
     description,
-    keywords,
-    image,
+    keywords = '',
+    image = null,
     type = 'website'
 }) => {
     const location = useLocation();

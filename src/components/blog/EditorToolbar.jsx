@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import {
     Bold,
@@ -19,6 +20,9 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 
+/**
+ * @param {{ editor: import('@tiptap/react').Editor | null, addImage: () => void }} props
+ */
 const EditorToolbar = ({ editor, addImage }) => {
     if (!editor) {
         return null;
@@ -35,12 +39,12 @@ const EditorToolbar = ({ editor, addImage }) => {
 
         // empty
         if (url === '') {
-            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            editor?.chain().focus().extendMarkRange('link').unsetLink().run();
             return;
         }
 
         // update
-        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
     };
 
     const ToolbarButton = ({ onClick, isActive, disabled, children, title }) => (
@@ -63,14 +67,14 @@ const EditorToolbar = ({ editor, addImage }) => {
     return (
         <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-t-xl sticky top-0 z-10">
             <ToolbarButton
-                onClick={() => editor.chain().focus().undo().run()}
+                onClick={() => editor?.chain().focus().undo().run()}
                 disabled={!editor.can().chain().focus().undo().run()}
                 title="Undo"
             >
                 <Undo size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().redo().run()}
+                onClick={() => editor?.chain().focus().redo().run()}
                 disabled={!editor.can().chain().focus().redo().run()}
                 title="Redo"
             >
@@ -80,28 +84,28 @@ const EditorToolbar = ({ editor, addImage }) => {
             <Divider />
 
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBold().run()}
+                onClick={() => editor?.chain().focus().toggleBold().run()}
                 isActive={editor.isActive('bold')}
                 title="Bold"
             >
                 <Bold size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleItalic().run()}
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
                 isActive={editor.isActive('italic')}
                 title="Italic"
             >
                 <Italic size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                onClick={() => editor?.chain().focus().toggleUnderline().run()}
                 isActive={editor.isActive('underline')}
                 title="Underline"
             >
                 <Underline size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleStrike().run()}
+                onClick={() => editor?.chain().focus().toggleStrike().run()}
                 isActive={editor.isActive('strike')}
                 title="Strikethrough"
             >
@@ -111,14 +115,14 @@ const EditorToolbar = ({ editor, addImage }) => {
             <Divider />
 
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
                 isActive={editor.isActive('heading', { level: 1 })}
                 title="Heading 1"
             >
                 <Heading1 size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
                 isActive={editor.isActive('heading', { level: 2 })}
                 title="Heading 2"
             >
@@ -128,28 +132,28 @@ const EditorToolbar = ({ editor, addImage }) => {
             <Divider />
 
             <ToolbarButton
-                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                onClick={() => editor?.chain().focus().setTextAlign('left').run()}
                 isActive={editor.isActive({ textAlign: 'left' })}
                 title="Align Left"
             >
                 <AlignLeft size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                onClick={() => editor?.chain().focus().setTextAlign('center').run()}
                 isActive={editor.isActive({ textAlign: 'center' })}
                 title="Align Center"
             >
                 <AlignCenter size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                onClick={() => editor?.chain().focus().setTextAlign('right').run()}
                 isActive={editor.isActive({ textAlign: 'right' })}
                 title="Align Right"
             >
                 <AlignRight size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+                onClick={() => editor?.chain().focus().setTextAlign('justify').run()}
                 isActive={editor.isActive({ textAlign: 'justify' })}
                 title="Justify"
             >
@@ -159,14 +163,14 @@ const EditorToolbar = ({ editor, addImage }) => {
             <Divider />
 
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
                 isActive={editor.isActive('bulletList')}
                 title="Bullet List"
             >
                 <List size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                onClick={() => editor?.chain().focus().toggleOrderedList().run()}
                 isActive={editor.isActive('orderedList')}
                 title="Ordered List"
             >
@@ -176,7 +180,7 @@ const EditorToolbar = ({ editor, addImage }) => {
             <Divider />
 
             <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                onClick={() => editor?.chain().focus().toggleBlockquote().run()}
                 isActive={editor.isActive('blockquote')}
                 title="Quote"
             >

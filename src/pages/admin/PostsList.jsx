@@ -105,7 +105,7 @@ const PostsList = () => {
                                 ))}
                                 {filteredPosts.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" className="py-12 text-center text-[var(--text-secondary)]">
+                                        <td colSpan={4} className="py-12 text-center text-[var(--text-secondary)]">
                                             No posts found matching your criteria.
                                         </td>
                                     </tr>

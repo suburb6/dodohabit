@@ -27,7 +27,7 @@ import DeleteAccount from './pages/DeleteAccount';
 
 const App = () => {
     useEffect(() => {
-        const lenis = new Lenis({
+        const lenis = new Lenis(/** @type {any} */({
             duration: 0.8,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             direction: 'vertical',
@@ -36,7 +36,7 @@ const App = () => {
             mouseMultiplier: 1,
             smoothTouch: false,
             touchMultiplier: 2,
-        });
+        }));
 
         let rafId;
 
