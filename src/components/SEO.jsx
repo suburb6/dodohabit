@@ -10,7 +10,8 @@ const SEO = ({
     type = 'website'
 }) => {
     const location = useLocation();
-    const siteUrl = 'https://dodohabit.com';
+    const rawSiteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://dodohabit.com';
+    const siteUrl = rawSiteUrl.replace(/\/$/, '');
     const currentUrl = `${siteUrl}${location.pathname}`;
     const defaultTitle = 'DodoHabit - Build Better Habits, Track Everything';
     const defaultDescription = 'The all-in-one habit tracker with auto step counting, heatmaps, and smart analytics. Build positive habits or break bad ones with DodoHabit.';

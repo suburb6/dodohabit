@@ -92,7 +92,7 @@ const AdminDashboard = () => {
                                 ))}
                                 {posts.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center text-[var(--text-secondary)]">
+                                        <td colSpan={Number(4)} className="py-8 text-center text-[var(--text-secondary)]">
                                             No posts found. Start writing!
                                         </td>
                                     </tr>
