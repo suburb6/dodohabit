@@ -24,6 +24,12 @@ export const BlogProvider = ({ children }) => {
 
     // Real-time subscription to posts
     useEffect(() => {
+        // If db is not initialized, skip subscription
+        if (!db) {
+            setLoading(false);
+            return;
+        }
+
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {

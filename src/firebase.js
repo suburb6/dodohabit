@@ -13,9 +13,29 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Log config status in development (values are masked)
+if (import.meta.env.DEV) {
+    console.log('Firebase config loaded:', Object.keys(firebaseConfig).map(k => `${k}: ${firebaseConfig[k] ? '✓' : '✗'}`).join(', '));
+}
 
+let app;
+let auth;
+let db;
+let storage;
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+    // Create mock objects to prevent crashes - features will be disabled
+    app = null;
+    auth = null;
+    db = null;
+    storage = null;
+}
+
+export { auth, db, storage };
 export default app;
