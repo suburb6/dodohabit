@@ -24,6 +24,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Feedback from './pages/Feedback';
 import DeleteAccount from './pages/DeleteAccount';
+import { ToastProvider } from './contexts/ToastContext';
 
 const App = () => {
     useEffect(() => {
@@ -58,6 +59,7 @@ const App = () => {
             <AuthProvider>
                 <BlogProvider>
                     <ThemeProvider>
+                        <ToastProvider>
                         <Router>
                             <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col font-sans text-[var(--text-primary)] transition-colors duration-300">
                                 <BackgroundEffects />
@@ -98,6 +100,7 @@ const App = () => {
                                 </Routes>
                             </div>
                         </Router>
+                        </ToastProvider>
                     </ThemeProvider>
                 </BlogProvider>
             </AuthProvider>
