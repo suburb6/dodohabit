@@ -25,47 +25,7 @@ const Blog = () => {
         );
     }
 
-    if (posts.length === 0) {
-        return (
-            <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
-                <SEO
-                    title="Blog - Coming Soon"
-                    description="The DodoHabit blog is coming soon. Stay tuned for updates!"
-                />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="space-y-8"
-                >
-                    <div className="inline-block p-4 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
-                        <span className="text-4xl">✍️</span>
-                    </div>
-
-                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400">
-                            Coming Soon
-                        </span>
-                    </h1>
-
-                    <p className="text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-                        We're crafting detailed guides on habit building, science-backed productivity tips, and health tracking insights.
-                    </p>
-
-                    <div className="pt-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] text-sm font-medium">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            Preparing first articles...
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen pt-24 pb-20 px-4 md:px-8 max-w-[1800px] mx-auto">
