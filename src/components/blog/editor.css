@@ -79,3 +79,35 @@
     text-decoration: underline;
     cursor: pointer;
 }
+
+/* TOC anchors (editor-only marker) */
+.ProseMirror .toc-anchor-marker {
+    position: relative;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    scroll-margin-top: 8rem;
+}
+
+.ProseMirror .toc-anchor-marker::after {
+    content: 'TOC';
+    position: absolute;
+    top: -0.85rem;
+    left: 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    transform: translateX(-10%);
+    pointer-events: none;
+}
+
+/* Hide the editor marker in rendered blog content */
+.prose .toc-anchor-marker {
+    display: none;
+}

@@ -13,28 +13,29 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Log config status in development (values are masked)
-if (import.meta.env.DEV) {
-    console.log('Firebase config loaded:', Object.keys(firebaseConfig).map(k => `${k}: ${firebaseConfig[k] ? '✓' : '✗'}`).join(', '));
-}
+// Check if Firebase config is valid (API key must be present and look valid)
+const isConfigValid = firebaseConfig.apiKey && 
+    firebaseConfig.apiKey.length > 10 && 
+    firebaseConfig.projectId;
 
-let app;
-let auth;
-let db;
-let storage;
+let app = null;
+let auth = null;
+let db = null;
+let storage = null;
+export let firebaseEnabled = false;
 
-try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-} catch (error) {
-    console.error('Firebase initialization error:', error);
-    // Create mock objects to prevent crashes - features will be disabled
-    app = null;
-    auth = null;
-    db = null;
-    storage = null;
+if (isConfigValid) {
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        storage = getStorage(app);
+        firebaseEnabled = true;
+    } catch (error) {
+        console.error('Firebase initialization error:', error);
+    }
+} else {
+    console.warn('Firebase config missing or invalid. Blog and admin features disabled.');
 }
 
 export { auth, db, storage };

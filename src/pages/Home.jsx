@@ -97,6 +97,11 @@ const Home = () => {
     return (
         <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden transition-colors duration-300">
 
+            <SEO
+                title="Home"
+                description="The all-in-one habit tracker with auto step counting, heatmaps, and smart analytics. Build positive habits or break bad ones with DodoHabit."
+            />
+
 
             <main className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
                 {/* Hero Section */}

@@ -2,11 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Scale } from 'lucide-react';
+import SEO from '../components/SEO';
 
 
 const Terms = () => {
     return (
         <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
+            <SEO
+                title="Terms and Conditions"
+                description="Read DodoHabit's terms and conditions for using the app and related services."
+            />
             <main className="flex-1 pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

@@ -22,7 +22,8 @@ const PostEditor = () => {
         slug: '',
         publishedAt: null,
         authorName: '',
-        authorTitle: ''
+        authorTitle: '',
+        tocHidden: []
     });
 
     useEffect(() => {
@@ -92,7 +93,7 @@ const PostEditor = () => {
 
     const handlePreview = () => {
         localStorage.setItem('blog_preview_data', JSON.stringify(post));
-        window.open('/blog/preview', '_blank');
+        window.open('/blog/preview', '_blank', 'noopener,noreferrer');
     };
 
     const headerActions = (
@@ -155,6 +156,13 @@ const PostEditor = () => {
                                 content={post.content}
                                 onChange={(content) => setPost({ ...post, content })}
                                 onImageUpload={handleBodyImageUpload}
+                                onHideFromToc={(text) => {
+                                    const normalized = (text || '').replace(/\s+/g, ' ').trim();
+                                    if (!normalized) return;
+                                    const existing = Array.isArray(post.tocHidden) ? post.tocHidden : [];
+                                    if (existing.some((t) => (t || '').toLowerCase() === normalized.toLowerCase())) return;
+                                    setPost({ ...post, tocHidden: [...existing, normalized] });
+                                }}
                             />
                         </div>
                     </div>

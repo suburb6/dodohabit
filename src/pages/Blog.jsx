@@ -10,8 +10,7 @@ const Blog = () => {
     const featuredPost = posts[0];
     const recentPosts = posts.slice(1);
 
-    // TEMP: Coming Soon Override
-    if (true) {
+    if (posts.length === 0) {
         return (
             <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
                 <SEO

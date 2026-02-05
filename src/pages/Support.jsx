@@ -2,10 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, Mail } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Support = () => {
     return (
         <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-[#FF5733] selection:text-white transition-colors duration-300">
+            <SEO
+                title="Support"
+                description="Contact DodoHabit support for help with the app, purchases, and account questions."
+            />
             <main className="pt-20 pb-20 px-4 md:px-8 max-w-2xl mx-auto text-center">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}

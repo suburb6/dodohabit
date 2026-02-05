@@ -1,11 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
+import SEO from '../components/SEO';
 
 
 const Privacy = () => {
     return (
         <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
+            <SEO
+                title="Privacy Policy"
+                description="Read DodoHabit's privacy policy, including what data we collect and how it's used."
+            />
             <main className="flex-1 pt-32 pb-20 px-4 md:px-8 max-w-4xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

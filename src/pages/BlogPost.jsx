@@ -7,6 +7,14 @@ import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import '../components/blog/editor.css'; // Reuse editor styles for content
 
+const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+const slugifyForId = (value) =>
+    (value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
 const BlogPost = () => {
     const { slug } = useParams();
     const { getPost, loading } = useBlog();
@@ -14,6 +22,7 @@ const BlogPost = () => {
     // Generate Table of Contents and inject IDs
     const [toc, setToc] = useState([]);
     const [processedContent, setProcessedContent] = useState('');
+    const [activeId, setActiveId] = useState(null);
 
     useEffect(() => {
         if (post?.content) {
@@ -21,24 +30,82 @@ const BlogPost = () => {
             const div = document.createElement('div');
             div.innerHTML = post.content;
 
-            const headings = [];
+            const hidden = new Set((Array.isArray(post.tocHidden) ? post.tocHidden : []).map(normalizeLabel));
+            const items = [];
+            const customLabels = new Set();
 
-            // Find all H1, H2 and H3
-            div.querySelectorAll('h1, h2, h3').forEach((heading, index) => {
-                const text = heading.textContent;
-                const id = `heading-${index}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-                heading.id = id;
-                headings.push({
+            // Collect headings + custom anchors in DOM order
+            div.querySelectorAll('span[data-toc-anchor="true"], h1, h2, h3').forEach((el, index) => {
+                const isAnchor = el.matches('span[data-toc-anchor="true"]');
+                const datasetLabel = el instanceof HTMLElement ? el.dataset?.tocLabel : null;
+                const rawText = isAnchor
+                    ? (el.getAttribute('data-toc-label') || datasetLabel || el.textContent || '')
+                    : (el.textContent || '');
+
+                const text = rawText.replace(/\s+/g, ' ').trim();
+                if (!text) return;
+
+                const normalized = normalizeLabel(text);
+                if (!isAnchor && hidden.has(normalized)) return;
+
+                // Custom anchors override same-label headings
+                if (!isAnchor && customLabels.has(normalized)) return;
+
+                let id = el.getAttribute('id');
+                if (!id) {
+                    id = `${isAnchor ? 'toc' : 'heading'}-${index}-${slugifyForId(text) || 'section'}`;
+                    el.setAttribute('id', id);
+                }
+
+                if (isAnchor) {
+                    el.setAttribute('data-toc-anchor', 'true');
+                    el.setAttribute('data-toc-label', text);
+                    customLabels.add(normalized);
+                }
+
+                items.push({
                     id,
                     text,
-                    level: heading.tagName.toLowerCase()
+                    level: isAnchor ? 'custom' : el.tagName.toLowerCase(),
                 });
             });
 
-            setToc(headings);
+            setToc(items);
             setProcessedContent(div.innerHTML);
+            setActiveId(items[0]?.id || null);
         }
     }, [post]);
+
+    useEffect(() => {
+        if (!toc.length) return;
+
+        const nodes = toc
+            .map((item) => document.getElementById(item.id))
+            .filter(Boolean);
+
+        if (!nodes.length) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries
+                    .filter((e) => e.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+                if (visible[0]?.target?.id) {
+                    setActiveId(visible[0].target.id);
+                }
+            },
+            {
+                root: null,
+                // Account for sticky header + scroll-mt-32
+                rootMargin: '-120px 0px -70% 0px',
+                threshold: [0, 0.1, 1],
+            }
+        );
+
+        nodes.forEach((n) => observer.observe(n));
+        return () => observer.disconnect();
+    }, [toc, processedContent]);
 
     if (loading) {
         return <div className="min-h-screen pt-32 text-center text-[var(--text-primary)]">Loading...</div>;
@@ -47,6 +114,10 @@ const BlogPost = () => {
     if (!post) {
         return (
             <div className="min-h-screen pt-32 flex flex-col items-center justify-center text-white">
+                <SEO
+                    title="Post Not Found"
+                    description="This blog post could not be found."
+                />
                 <h1 className="text-4xl font-bold mb-4 text-[var(--text-primary)]">404</h1>
                 <p className="text-[var(--text-secondary)] mb-8">Post not found</p>
                 <Link to="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
@@ -55,6 +126,11 @@ const BlogPost = () => {
             </div>
         );
     }
+
+    const plainText = (post.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const metaDescription = (post.excerpt && post.excerpt.trim() !== '')
+        ? post.excerpt
+        : (plainText ? `${plainText.substring(0, 160)}${plainText.length > 160 ? '…' : ''}` : undefined);
 
     const stats = readingTime(post.content);
     const date = new Date(post.publishedAt || post.createdAt).toLocaleDateString(undefined, {
@@ -68,7 +144,7 @@ const BlogPost = () => {
         <article className="min-h-screen pt-32 pb-20">
             <SEO
                 title={post.title}
-                description={post.excerpt}
+                description={metaDescription}
                 image={post.featuredImage}
                 type="article"
             />
@@ -134,12 +210,18 @@ const BlogPost = () => {
                                     <a
                                         key={item.id}
                                         href={`#${item.id}`}
-                                        className={`block py-2 text-sm transition-colors border-l-2 pl-4 ${item.level === 'h2'
-                                            ? 'text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500'
-                                            : 'text-[var(--text-secondary)] border-transparent hover:text-[var(--text-primary)] ml-2'
+                                        className={`block py-2 text-sm transition-colors border-l-2 pl-4 ${item.level === 'h2' || item.level === 'custom'
+                                            ? 'text-[var(--text-primary)]'
+                                            : 'text-[var(--text-secondary)] ml-2'
+                                            } ${activeId === item.id
+                                            ? 'border-blue-500'
+                                            : (item.level === 'h2' || item.level === 'custom'
+                                                ? 'border-[var(--border-color)] hover:border-blue-500'
+                                                : 'border-transparent hover:text-[var(--text-primary)]')
                                             }`}
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            setActiveId(item.id);
                                             document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
                                         }}
                                     >

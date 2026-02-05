@@ -11,13 +11,19 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        console.error('ErrorBoundary caught an error:', error, errorInfo);
+        console.error('ErrorBoundary caught an error:', error);
+        console.error('Error info:', errorInfo);
+        console.error('Component stack:', errorInfo.componentStack);
+        // Log to external service for debugging (optional)
+        if (import.meta.env.PROD) {
+            // Could send to Sentry, LogRocket, etc.
+        }
     }
 
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
                     <div className="bg-gray-800 rounded-xl p-8 max-w-md text-center">
                         <h1 className="text-2xl font-bold text-white mb-4">Something went wrong</h1>
                         <p className="text-gray-400 mb-6">
@@ -34,6 +40,9 @@ class ErrorBoundary extends React.Component {
                                 {this.state.error.toString()}
                             </pre>
                         )}
+                        <p className="text-gray-500 text-xs mt-4">
+                            Check browser console for details
+                        </p>
                     </div>
                 </div>
             );
