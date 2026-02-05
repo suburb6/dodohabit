@@ -13,7 +13,7 @@ const Blog = () => {
     if (loading) {
         return (
             <div className="min-h-screen pt-32 pb-20 flex flex-col items-center justify-center">
-                <SEO title="Blog" description="DodoHabit Blog - Loading..." />
+                <SEO title="Blog" description="DodoHabit Blog" />
                 <div className="flex items-center gap-3 text-[var(--text-secondary)]">
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -14,6 +14,7 @@ const PostEditor = () => {
     const toast = useToast();
     const isNew = !id;
     const [uploading, setUploading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
     const [tocOpen, setTocOpen] = useState(true);
     const savedRef = useRef(false);
@@ -141,6 +142,7 @@ const PostEditor = () => {
     };
 
     const handleSave = async (statusOverride) => {
+        if (saving) return;
         const status = statusOverride || post.status;
         const now = new Date().toISOString();
 
@@ -151,6 +153,7 @@ const PostEditor = () => {
         };
 
         try {
+            setSaving(true);
             savedRef.current = true;
             setDirty(false);
             if (isNew) {
@@ -159,11 +162,13 @@ const PostEditor = () => {
                 await updatePost(id, postData);
             }
             toast?.success?.(status === 'published' ? 'Post published successfully!' : 'Draft saved!');
-            navigate('/admin/posts');
+            // Small delay so the user sees the toast before navigating
+            setTimeout(() => navigate('/admin/posts'), 600);
         } catch (error) {
             console.error("Failed to save post:", error);
             savedRef.current = false;
             setDirty(true);
+            setSaving(false);
             toast?.error?.(`Failed to ${status === 'published' ? 'publish' : 'save'}: ${error?.message || 'Unknown error'}`);
         }
     };
@@ -183,17 +188,17 @@ const PostEditor = () => {
             </button>
             <button
                 onClick={() => handleSave('draft')}
-                disabled={uploading}
+                disabled={uploading || saving}
                 className="px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg font-medium hover:bg-[var(--bg-primary)] transition-colors disabled:opacity-50 text-sm shadow-sm"
             >
-                Save Draft
+                {saving ? 'Saving...' : 'Save Draft'}
             </button>
             <button
                 onClick={() => handleSave('published')}
-                disabled={uploading}
+                disabled={uploading || saving}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 text-sm shadow-sm"
             >
-                <Save size={18} /> {post.status === 'published' ? 'Update' : 'Publish'}
+                <Save size={18} /> {saving ? 'Saving...' : (post.status === 'published' ? 'Update' : 'Publish')}
             </button>
         </>
     );
