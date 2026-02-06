@@ -181,6 +181,7 @@ export const BlogProvider = ({ children }) => {
                     // Save metadata in background (fire and forget)
                     // This way if Firestore rules fail, it doesn't block the user
                     if (db) {
+                        console.log("Saving media metadata to Firestore...", { url: downloadURL });
                         addDoc(collection(db, 'media'), {
                             url: downloadURL,
                             path: response.public_id,
@@ -190,7 +191,15 @@ export const BlogProvider = ({ children }) => {
                             size: file.size,
                             source: 'cloudinary',
                             uploadedAt: serverTimestamp()
-                        }).catch(err => console.warn("Background metadata save failed:", err));
+                        })
+                            .then((docRef) => console.log("Media metadata saved with ID:", docRef.id))
+                            .catch(err => {
+                                console.error("CRITICAL: Background metadata save failed:", err);
+                                // Verify if it's a permission issue
+                                if (err.code === 'permission-denied') {
+                                    console.error("This is likely a Firestore Rules issue. Check the Rules tab in Firebase Console.");
+                                }
+                            });
                     }
                 } else {
                     console.error("Cloudinary Error:", xhr.responseText);
