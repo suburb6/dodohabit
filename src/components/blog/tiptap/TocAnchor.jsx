@@ -19,6 +19,9 @@ const TocAnchor = Node.create({
             label: {
                 default: null,
             },
+            level: {
+                default: 'main', // 'main' or 'sub'
+            },
         };
     },
 
@@ -31,6 +34,7 @@ const TocAnchor = Node.create({
                     return {
                         id: dom.getAttribute('id') || dom.dataset.tocId || null,
                         label: dom.dataset.tocLabel || null,
+                        level: dom.dataset.tocLevel || 'main',
                     };
                 },
             },
@@ -40,6 +44,7 @@ const TocAnchor = Node.create({
     renderHTML({ HTMLAttributes }) {
         const id = HTMLAttributes.id || HTMLAttributes['data-toc-id'] || null;
         const label = HTMLAttributes.label || HTMLAttributes['data-toc-label'] || null;
+        const level = HTMLAttributes.level || 'main'; // Ensure default
 
         return [
             'span',
@@ -48,6 +53,8 @@ const TocAnchor = Node.create({
                 'data-toc-anchor': 'true',
                 'data-toc-id': id || undefined,
                 'data-toc-label': label || undefined,
+                'data-toc-level': level,
+                'data-level': level, // For CSS selector convenience
                 class: ['toc-anchor-marker', HTMLAttributes.class].filter(Boolean).join(' '),
             }),
         ];

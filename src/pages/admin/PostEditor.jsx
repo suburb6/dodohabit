@@ -85,7 +85,8 @@ const PostEditor = () => {
         div.querySelectorAll('span[data-toc-anchor="true"]').forEach((el) => {
             const label = el.getAttribute('data-toc-label') || (el instanceof HTMLElement ? el.dataset?.tocLabel : null) || '';
             const id = el.getAttribute('id') || el.getAttribute('data-toc-id') || '';
-            if (label.trim()) anchors.push({ label: label.trim(), id });
+            const level = el.getAttribute('data-toc-level') || 'main';
+            if (label.trim()) anchors.push({ label: label.trim(), id, level });
         });
         return { headings, anchors };
     }, [post.content]);
@@ -109,13 +110,14 @@ const PostEditor = () => {
         const el = div.querySelector(`span[data-toc-anchor="true"]#${CSS.escape(anchorId)}`) ||
             div.querySelector(`span[data-toc-anchor="true"][data-toc-id="${CSS.escape(anchorId)}"]`);
         if (el) {
-            el.remove();
+            // Replace with just text
+            const text = el.getAttribute('data-toc-label') || '';
+            el.replaceWith(document.createTextNode(text)); // Replace node with text
             setPost((p) => ({ ...p, content: div.innerHTML }));
         }
     }, [post.content]);
 
     const uploadIdRef = useRef(0);
-
     const [fileDetails, setFileDetails] = useState(null);
 
     const handleFeaturedImageChange = async (file) => {
@@ -126,11 +128,9 @@ const PostEditor = () => {
         }
         if (typeof file === 'string') return;
 
-        // Start new upload ID
         const currentId = Date.now();
         uploadIdRef.current = currentId;
 
-        // Format file size
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
         setFileDetails({
             name: file.name,
@@ -148,18 +148,13 @@ const PostEditor = () => {
                 }
             });
 
-            // Only update if this is still the active upload
             if (uploadIdRef.current === currentId) {
                 setPost({ ...post, featuredImage: url });
             }
         } catch (error) {
-            // Only show error if not cancelled (cancelled uploads might throw or just stop)
             if (uploadIdRef.current !== 0) {
-                // Check if it was explicitly cancelled by user interaction
-                if (uploadIdRef.current !== 0) {
-                    console.error("Upload error caught in component:", error);
-                    toast?.error?.(`Upload failed: ${error.message || 'Unknown error'}`);
-                }
+                console.error("Upload error caught in component:", error);
+                toast?.error?.(`Upload failed: ${error.message || 'Unknown error'}`);
             }
         } finally {
             if (uploadIdRef.current === currentId) {
@@ -170,7 +165,7 @@ const PostEditor = () => {
     };
 
     const handleCancelUpload = () => {
-        uploadIdRef.current = 0; // Invalidate current upload
+        uploadIdRef.current = 0;
         setUploading(false);
         setUploadProgress(0);
         setFileDetails(null);
@@ -202,6 +197,11 @@ const PostEditor = () => {
         const status = statusOverride || post.status;
         const now = new Date().toISOString();
 
+        if (!post.title || !post.title.trim()) {
+            toast?.error?.("Post title is required.");
+            return;
+        }
+
         const postData = {
             ...post,
             status,
@@ -218,7 +218,6 @@ const PostEditor = () => {
                 await updatePost(id, postData);
             }
             toast?.success?.(status === 'published' ? 'Post published successfully!' : 'Draft saved!');
-            // Small delay so the user sees the toast before navigating
             setTimeout(() => navigate('/admin/posts'), 600);
         } catch (error) {
             console.error("Failed to save post:", error);
@@ -399,8 +398,12 @@ const PostEditor = () => {
                                                 <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Custom Entries</label>
                                                 <div className="space-y-1">
                                                     {tocEntries.anchors.map((a, i) => (
-                                                        <div key={a.id || i} className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group">
-                                                            <Bookmark size={12} className="text-blue-500 shrink-0" />
+                                                        <div key={a.id || i} className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group ${a.level === 'sub' ? 'ml-4 border-l-2 border-l-purple-400' : ''}`}>
+                                                            {a.level === 'sub' ? (
+                                                                <div className="text-purple-400 shrink-0 select-none">↳</div>
+                                                            ) : (
+                                                                <Bookmark size={12} className="text-blue-500 shrink-0" />
+                                                            )}
                                                             <span className="text-xs text-[var(--text-primary)] truncate flex-1">{a.label}</span>
                                                             <button
                                                                 type="button"
@@ -417,63 +420,67 @@ const PostEditor = () => {
                                         )}
 
                                         {/* Auto-detected headings */}
-                                        {tocEntries.headings.length > 0 && (
-                                            <div>
-                                                <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Headings</label>
-                                                <div className="space-y-1">
-                                                    {tocEntries.headings.map((h, i) => {
-                                                        const isHidden = tocHiddenArr.some((t) => (t || '').toLowerCase() === h.text.toLowerCase());
-                                                        return (
-                                                            <div
-                                                                key={i}
-                                                                className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group ${isHidden ? 'opacity-50' : ''
-                                                                    }`}
-                                                            >
-                                                                <Hash size={12} className={`shrink-0 ${h.level === 'h1' ? 'text-blue-500' : h.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
-                                                                <span className={`text-xs truncate flex-1 ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
-                                                                    {h.text}
-                                                                </span>
-                                                                <span className="text-[10px] text-[var(--text-secondary)] uppercase font-bold shrink-0">{h.level}</span>
-                                                                {isHidden ? (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => unhideFromToc(h.text)}
-                                                                        className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-green-400 transition-all"
-                                                                        title="Show in TOC"
-                                                                    >
-                                                                        <Eye size={12} />
-                                                                    </button>
-                                                                ) : (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const existing = Array.isArray(post.tocHidden) ? post.tocHidden : [];
-                                                                            setPost({ ...post, tocHidden: [...existing, h.text] });
-                                                                        }}
-                                                                        className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-yellow-400 transition-all"
-                                                                        title="Hide from TOC"
-                                                                    >
-                                                                        <EyeOff size={12} />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
+                                        {
+                                            tocEntries.headings.length > 0 && (
+                                                <div>
+                                                    <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Headings</label>
+                                                    <div className="space-y-1">
+                                                        {tocEntries.headings.map((h, i) => {
+                                                            const isHidden = tocHiddenArr.some((t) => (t || '').toLowerCase() === h.text.toLowerCase());
+                                                            return (
+                                                                <div
+                                                                    key={i}
+                                                                    className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group ${isHidden ? 'opacity-50' : ''
+                                                                        }`}
+                                                                >
+                                                                    <Hash size={12} className={`shrink-0 ${h.level === 'h1' ? 'text-blue-500' : h.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
+                                                                    <span className={`text-xs truncate flex-1 ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
+                                                                        {h.text}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-[var(--text-secondary)] uppercase font-bold shrink-0">{h.level}</span>
+                                                                    {isHidden ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => unhideFromToc(h.text)}
+                                                                            className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-green-400 transition-all"
+                                                                            title="Show in TOC"
+                                                                        >
+                                                                            <Eye size={12} />
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const existing = Array.isArray(post.tocHidden) ? post.tocHidden : [];
+                                                                                setPost({ ...post, tocHidden: [...existing, h.text] });
+                                                                            }}
+                                                                            className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-yellow-400 transition-all"
+                                                                            title="Hide from TOC"
+                                                                        >
+                                                                            <EyeOff size={12} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )
+                                        }
 
-                                        {tocEntries.anchors.length === 0 && tocEntries.headings.length === 0 && (
-                                            <p className="text-xs text-[var(--text-secondary)] italic">No TOC entries yet. Add headings or right-click text to create custom entries.</p>
-                                        )}
-                                    </div>
+                                        {
+                                            tocEntries.anchors.length === 0 && tocEntries.headings.length === 0 && (
+                                                <p className="text-xs text-[var(--text-secondary)] italic">No TOC entries yet. Add headings or right-click text to create custom entries.</p>
+                                            )
+                                        }
+                                    </div >
                                 )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                            </div >
+                        </div >
+                    </div >
+                </div >
+            </div >
+        </div >
     );
 };
 

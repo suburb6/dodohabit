@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { X } from 'lucide-react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -105,55 +106,80 @@ const RichTextEditor = ({
         };
     }, [tocMenu, closeTocMenu]);
 
+    // Context menu logic
+
     const onEditorContextMenu = useCallback(
         (e) => {
             if (!editor) return;
+            // distinct behavior: check if we are clicking on an existing anchor
+            // TipTap doesn't make finding the node at coordinates trivial without a helper, 
+            // but we can check if the selection *is* an anchor
+
             const { empty, from, to } = editor.state.selection;
-            if (empty || from === to) return;
+            // If clicked directly on a node (like our anchor), the selection might be a NodeSelection
 
-            const selectedText = editor.state.doc.textBetween(from, to, ' ');
-            const trimmed = (selectedText || '').replace(/\s+/g, ' ').trim();
-            if (!trimmed) return;
+            // Helpful: check if the active node or mark at selection is 'tocAnchor'
+            const isAhc = editor.isActive('tocAnchor');
 
-            e.preventDefault();
-            setTocMenu({
-                x: e.clientX,
-                y: e.clientY,
-                label: trimmed,
-                selectionText: trimmed,
-            });
+            // If we have a selection range
+            if (!empty && from !== to) {
+                const selectedText = editor.state.doc.textBetween(from, to, ' ');
+                const trimmed = (selectedText || '').replace(/\s+/g, ' ').trim();
+                if (!trimmed) return;
+
+                e.preventDefault();
+                setTocMenu({
+                    x: e.clientX,
+                    y: e.clientY,
+                    label: trimmed,
+                    selectionText: trimmed,
+                    isExisting: isAhc
+                });
+                return;
+            }
+
+            // If we clicked exactly on an existing anchor (without range selection potentially)
+            if (isAhc) {
+                e.preventDefault();
+                // Try to get the attribute
+                const attrs = editor.getAttributes('tocAnchor');
+                setTocMenu({
+                    x: e.clientX,
+                    y: e.clientY,
+                    label: attrs.label || 'Entry',
+                    selectionText: attrs.label || '',
+                    isExisting: true
+                });
+            }
         },
         [editor]
     );
 
-    const canShowTocMenu = useMemo(() => {
-        if (!editor) return false;
-        const { empty, from, to } = editor.state.selection;
-        return !empty && from !== to;
-    }, [editor, tocMenu]);
+    const handleTocAction = useCallback((levelOverride) => {
+        if (!editor) return;
 
-    const insertAnchorFromMenu = useCallback(() => {
-        if (!editor || !tocMenu?.label) return;
-        const label = tocMenu.label.replace(/\s+/g, ' ').trim();
-        if (!label) return;
+        if (tocMenu.isExisting) {
+            // REMOVE Logic
+            // To "Remove", we just replace the node with its text label
+            const text = tocMenu.label;
+            editor.chain().focus().insertContent(text).run();
+        } else {
+            // ADD Logic ('main' or 'sub')
+            const label = tocMenu.label.replace(/\s+/g, ' ').trim();
+            if (!label) return;
+            const level = levelOverride || 'main';
 
-        const id = `toc-${Date.now()}-${slugifyForId(label) || 'section'}`;
-        const { from } = editor.state.selection;
-        editor
-            .chain()
-            .focus()
-            .insertContentAt(from, { type: 'tocAnchor', attrs: { id, label } })
-            .run();
+            const id = `toc-${Date.now()}-${slugifyForId(label) || 'section'}`;
+            const { from } = editor.state.selection;
+            editor
+                .chain()
+                .focus()
+                .insertContentAt(from, { type: 'tocAnchor', attrs: { id, label, level } })
+                .run();
+        }
 
         closeTocMenu();
     }, [editor, tocMenu, closeTocMenu]);
-
-    const hideFromTocFromMenu = useCallback(() => {
-        const selectionText = tocMenu?.selectionText;
-        if (!selectionText) return;
-        onHideFromToc?.(selectionText);
-        closeTocMenu();
-    }, [tocMenu, onHideFromToc, closeTocMenu]);
 
     return (
         <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-xl overflow-hidden relative">
@@ -165,13 +191,14 @@ const RichTextEditor = ({
             {tocMenu && (
                 <div
                     data-toc-menu
-                    className="fixed z-50 w-72 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-xl p-3"
+                    className="fixed z-50 w-80 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-xl p-3"
                     style={{ left: tocMenu.x, top: tocMenu.y }}
                     role="dialog"
                     aria-label="Table of contents actions"
                 >
-                    <div className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2">
-                        Table of Contents
+                    <div className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-2 flex items-center justify-between">
+                        <span>Table of Contents</span>
+                        {tocMenu.isExisting && <span className="text-red-400 text-[10px]">Editing</span>}
                     </div>
 
                     <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1">Label</label>
@@ -182,26 +209,38 @@ const RichTextEditor = ({
                         placeholder="TOC label"
                     />
 
-                    <div className="flex items-center gap-2 mt-3">
-                        <button
-                            type="button"
-                            onClick={insertAnchorFromMenu}
-                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
-                        >
-                            Add to TOC
-                        </button>
-                        <button
-                            type="button"
-                            onClick={hideFromTocFromMenu}
-                            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-lg text-xs font-semibold hover:bg-[var(--bg-secondary)] transition-colors"
-                            title="Hide matching heading text from the TOC"
-                        >
-                            Hide
-                        </button>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                        {tocMenu.isExisting ? (
+                            <button
+                                type="button"
+                                onClick={() => handleTocAction()}
+                                className="col-span-2 px-3 py-2 bg-red-500/10 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <X size={14} /> Remove Entry
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => handleTocAction('main')}
+                                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                                >
+                                    Add Main
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleTocAction('sub')}
+                                    className="px-3 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
+                                >
+                                    Add Sub
+                                </button>
+                            </>
+                        )}
+
                         <button
                             type="button"
                             onClick={closeTocMenu}
-                            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg text-xs font-semibold hover:text-[var(--text-primary)] transition-colors"
+                            className="col-span-2 px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)] rounded-lg text-xs font-semibold hover:text-[var(--text-primary)] transition-colors"
                         >
                             Esc
                         </button>
