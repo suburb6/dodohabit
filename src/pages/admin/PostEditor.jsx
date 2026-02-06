@@ -155,9 +155,10 @@ const PostEditor = () => {
         } catch (error) {
             // Only show error if not cancelled (cancelled uploads might throw or just stop)
             if (uploadIdRef.current !== 0) {
-                // Check if it was explicitly cancelled by user interaction (though usually we handle that in handleCancelUpload)
+                // Check if it was explicitly cancelled by user interaction
                 if (uploadIdRef.current !== 0) {
-                    toast?.error?.('Failed to upload image');
+                    console.error("Upload error caught in component:", error);
+                    toast?.error?.(`Upload failed: ${error.message || 'Unknown error'}`);
                 }
             }
         } finally {

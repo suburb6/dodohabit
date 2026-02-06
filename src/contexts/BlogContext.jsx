@@ -11,7 +11,7 @@ import {
     orderBy,
     serverTimestamp
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, deleteObject } from 'firebase/storage';
 import { storage } from '../firebase';
 
 const BlogContext = createContext(null);
@@ -136,56 +136,69 @@ export const BlogProvider = ({ children }) => {
             .filter(post => post.status === 'published');
     };
 
+    // --- CLOUDINARY UPLOAD IMPLEMENTATION ---
     const uploadImage = (file, onProgress) => {
         if (!file) return Promise.resolve(null);
 
         return new Promise((resolve, reject) => {
-            try {
-                // Create a unique filename: timestamp_filename
-                const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-                const storagePath = `blog_images/${filename}`;
-                const storageRef = ref(storage, storagePath);
+            const cloudName = 'dtwpubykd';
+            const uploadPreset = 'dodohabit_uploads';
 
-                const uploadTask = uploadBytesResumable(storageRef, file);
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-                uploadTask.on(
-                    'state_changed',
-                    (snapshot) => {
-                        if (onProgress) {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            onProgress(progress);
-                        }
-                    },
-                    (error) => {
-                        console.error("Error uploading image:", error);
-                        reject(error);
-                    },
-                    async () => {
-                        try {
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
 
-                            // Save to Firestore 'media' collection for the library
-                            await addDoc(collection(db, 'media'), {
-                                url: downloadURL,
-                                path: storagePath,
-                                filename: filename,
-                                originalName: file.name,
-                                type: file.type,
-                                size: file.size,
-                                uploadedAt: serverTimestamp()
-                            });
+            const xhr = new XMLHttpRequest();
 
-                            resolve(downloadURL);
-                        } catch (err) {
-                            console.error("Error saving media metadata:", err);
-                            reject(err);
-                        }
+            // Open POST request
+            xhr.open('POST', url, true);
+
+            // Track progress
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable && onProgress) {
+                    const progress = (e.loaded / e.total) * 100;
+                    onProgress(progress);
+                }
+            };
+
+            // Handle response
+            xhr.onload = async () => {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    const downloadURL = response.secure_url;
+
+                    try {
+                        // Store metadata in Firestore so your Media Library still works!
+                        await addDoc(collection(db, 'media'), {
+                            url: downloadURL,
+                            path: response.public_id, // Store Cloudinary Public ID
+                            filename: file.name,
+                            originalName: file.name,
+                            type: file.type,
+                            size: file.size,
+                            source: 'cloudinary',
+                            uploadedAt: serverTimestamp()
+                        });
+
+                        resolve(downloadURL);
+                    } catch (err) {
+                        console.error("Error saving media metadata (image still uploaded):", err);
+                        // Resolve anyway so the user can use the image
+                        resolve(downloadURL);
                     }
-                );
-            } catch (error) {
-                console.error("Error initiating upload:", error);
-                reject(error);
-            }
+                } else {
+                    console.error("Cloudinary Error:", xhr.responseText);
+                    reject(new Error(`Cloudinary Upload Failed: ${xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error("Network error during upload"));
+            };
+
+            xhr.send(formData);
         });
     };
 
