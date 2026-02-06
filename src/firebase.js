@@ -13,9 +13,16 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+console.log("Firebase Config Debug:", {
+    apiKeyLength: firebaseConfig.apiKey?.length,
+    apiKeyStart: firebaseConfig.apiKey?.substring(0, 5),
+    projectId: firebaseConfig.projectId,
+    env: import.meta.env.MODE
+});
+
 // Check if Firebase config is valid (API key must be present and look valid)
-const isConfigValid = firebaseConfig.apiKey && 
-    firebaseConfig.apiKey.length > 10 && 
+const isConfigValid = firebaseConfig.apiKey &&
+    firebaseConfig.apiKey.length > 10 &&
     firebaseConfig.projectId;
 
 let app = null;

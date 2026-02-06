@@ -11,7 +11,7 @@ import {
     orderBy,
     serverTimestamp
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../firebase';
 
 const BlogContext = createContext(null);
@@ -136,33 +136,57 @@ export const BlogProvider = ({ children }) => {
             .filter(post => post.status === 'published');
     };
 
-    const uploadImage = async (file) => {
-        if (!file) return null;
-        try {
-            // Create a unique filename: timestamp_filename
-            const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            const storagePath = `blog_images/${filename}`;
-            const storageRef = ref(storage, storagePath);
+    const uploadImage = (file, onProgress) => {
+        if (!file) return Promise.resolve(null);
 
-            await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(storageRef);
+        return new Promise((resolve, reject) => {
+            try {
+                // Create a unique filename: timestamp_filename
+                const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+                const storagePath = `blog_images/${filename}`;
+                const storageRef = ref(storage, storagePath);
 
-            // Save to Firestore 'media' collection for the library
-            await addDoc(collection(db, 'media'), {
-                url: downloadURL,
-                path: storagePath,
-                filename: filename,
-                originalName: file.name,
-                type: file.type,
-                size: file.size,
-                uploadedAt: serverTimestamp()
-            });
+                const uploadTask = uploadBytesResumable(storageRef, file);
 
-            return downloadURL;
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            throw error;
-        }
+                uploadTask.on(
+                    'state_changed',
+                    (snapshot) => {
+                        if (onProgress) {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            onProgress(progress);
+                        }
+                    },
+                    (error) => {
+                        console.error("Error uploading image:", error);
+                        reject(error);
+                    },
+                    async () => {
+                        try {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+                            // Save to Firestore 'media' collection for the library
+                            await addDoc(collection(db, 'media'), {
+                                url: downloadURL,
+                                path: storagePath,
+                                filename: filename,
+                                originalName: file.name,
+                                type: file.type,
+                                size: file.size,
+                                uploadedAt: serverTimestamp()
+                            });
+
+                            resolve(downloadURL);
+                        } catch (err) {
+                            console.error("Error saving media metadata:", err);
+                            reject(err);
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error("Error initiating upload:", error);
+                reject(error);
+            }
+        });
     };
 
     // Media state and subscription

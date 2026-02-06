@@ -14,9 +14,7 @@ const PostEditor = () => {
     const toast = useToast();
     const isNew = !id;
     const [uploading, setUploading] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [dirty, setDirty] = useState(false);
-    const [tocOpen, setTocOpen] = useState(true);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const savedRef = useRef(false);
 
     const [post, setPost] = useState({
@@ -24,6 +22,9 @@ const PostEditor = () => {
         excerpt: '',
         content: '',
         featuredImage: null,
+        featuredImageCaption: '',
+        featuredImageAlt: '',
+        featuredImageCredit: '',
         status: 'draft',
         slug: '',
         publishedAt: null,
@@ -110,22 +111,73 @@ const PostEditor = () => {
         }
     }, [post.content]);
 
+    const uploadIdRef = useRef(0);
+
+    const [fileDetails, setFileDetails] = useState(null);
+
     const handleFeaturedImageChange = async (file) => {
         if (!file) {
             setPost({ ...post, featuredImage: null });
+            setFileDetails(null);
             return;
         }
         if (typeof file === 'string') return;
 
+        // Start new upload ID
+        const currentId = Date.now();
+        uploadIdRef.current = currentId;
+
+        // Format file size
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        setFileDetails({
+            name: file.name,
+            size: `${sizeInMB} MB`,
+            type: file.type
+        });
+
         try {
             setUploading(true);
-            const url = await uploadImage(file);
-            setPost({ ...post, featuredImage: url });
+            setUploadProgress(0);
+
+            const url = await uploadImage(file, (progress) => {
+                if (uploadIdRef.current === currentId) {
+                    setUploadProgress(progress);
+                }
+            });
+
+            // Only update if this is still the active upload
+            if (uploadIdRef.current === currentId) {
+                setPost({ ...post, featuredImage: url });
+            }
         } catch (error) {
-            toast?.error?.('Failed to upload image');
+            // Only show error if not cancelled (cancelled uploads might throw or just stop)
+            if (uploadIdRef.current !== 0) {
+                // Check if it was explicitly cancelled by user interaction (though usually we handle that in handleCancelUpload)
+                if (uploadIdRef.current !== 0) {
+                    toast?.error?.('Failed to upload image');
+                }
+            }
         } finally {
-            setUploading(false);
+            if (uploadIdRef.current === currentId) {
+                setUploading(false);
+                setUploadProgress(0);
+            }
         }
+    };
+
+    const handleCancelUpload = () => {
+        uploadIdRef.current = 0; // Invalidate current upload
+        setUploading(false);
+        setUploadProgress(0);
+        setFileDetails(null);
+        toast?.info?.("Upload cancelled");
+    };
+
+    const handleMetadataChange = (field, value) => {
+        setPost(p => ({
+            ...p,
+            [`featuredImage${field.charAt(0).toUpperCase() + field.slice(1)}`]: value
+        }));
     };
 
     const handleBodyImageUpload = async (file) => {
@@ -231,6 +283,16 @@ const PostEditor = () => {
                                 image={post.featuredImage}
                                 onChange={handleFeaturedImageChange}
                                 uploading={uploading}
+                                onCancel={handleCancelUpload}
+                                progress={uploadProgress}
+                                fileDetails={fileDetails}
+                                recommendedText="1200 x 630px"
+                                metadata={{
+                                    caption: post.featuredImageCaption,
+                                    alt: post.featuredImageAlt,
+                                    credit: post.featuredImageCredit
+                                }}
+                                onMetadataChange={handleMetadataChange}
                                 height="h-48"
                             />
                         </div>

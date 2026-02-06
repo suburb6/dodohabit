@@ -176,12 +176,38 @@ const BlogPost = () => {
             {/* Featured Image */}
             {post.featuredImage && (
                 <div className="max-w-6xl mx-auto px-4 md:px-8 mb-16">
-                    <div className="aspect-[21/9] rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)]">
-                        <img
-                            src={post.featuredImage}
-                            alt={post.title}
-                            className="w-full h-full object-cover"
-                        />
+                    <div className="rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)]">
+                        <div className="aspect-[21/9]">
+                            <img
+                                src={post.featuredImage}
+                                alt={post.featuredImageAlt || post.title}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        {(post.featuredImageCaption || post.featuredImageCredit) && (
+                            <div className="px-6 py-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] flex flex-wrap justify-between items-center gap-4 text-xs md:text-sm text-[var(--text-secondary)]">
+                                {post.featuredImageCaption && (
+                                    <span className="font-medium italic">{post.featuredImageCaption}</span>
+                                )}
+                                {post.featuredImageCredit && (
+                                    <div className="flex items-center gap-1">
+                                        <span className="opacity-70">Source:</span>
+                                        {post.featuredImageCredit.startsWith('http') ? (
+                                            <a
+                                                href={post.featuredImageCredit}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 hover:underline"
+                                            >
+                                                {new URL(post.featuredImageCredit).hostname.replace('www.', '')}
+                                            </a>
+                                        ) : (
+                                            <span>{post.featuredImageCredit}</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -214,10 +240,10 @@ const BlogPost = () => {
                                             ? 'text-[var(--text-primary)]'
                                             : 'text-[var(--text-secondary)] ml-2'
                                             } ${activeId === item.id
-                                            ? 'border-blue-500'
-                                            : (item.level === 'h2' || item.level === 'custom'
-                                                ? 'border-[var(--border-color)] hover:border-blue-500'
-                                                : 'border-transparent hover:text-[var(--text-primary)]')
+                                                ? 'border-blue-500'
+                                                : (item.level === 'h2' || item.level === 'custom'
+                                                    ? 'border-[var(--border-color)] hover:border-blue-500'
+                                                    : 'border-transparent hover:text-[var(--text-primary)]')
                                             }`}
                                         onClick={(e) => {
                                             e.preventDefault();
