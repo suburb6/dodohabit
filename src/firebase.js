@@ -35,7 +35,10 @@ if (isConfigValid) {
     try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
-        db = getFirestore(app);
+        db = getFirestore(app, {
+            experimentalForceLongPolling: true,
+            useFetchStreams: false,
+        });
         storage = getStorage(app);
         firebaseEnabled = true;
     } catch (error) {

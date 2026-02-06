@@ -34,7 +34,7 @@ const RichTextEditor = ({
             TocAnchor,
             Image.configure({
                 inline: true,
-                allowBase64: true,
+                allowBase64: false, // Force uploads to prevent oversized docs
             }),
             // Link.configure({ // Potentially duplicate
             //     openOnClick: false,

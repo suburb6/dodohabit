@@ -215,11 +215,19 @@ const PostEditor = () => {
             return;
         }
 
-        const postData = {
+        const postToSave = {
             ...post,
             status,
             publishedAt: status === 'published' && !post.publishedAt ? now : post.publishedAt
         };
+        const contentSizeBytes = new Blob([postToSave.content || '']).size;
+        console.log(`Payload Size Check: ~${(contentSizeBytes / 1024).toFixed(2)} KB`);
+
+        if (contentSizeBytes > 800000) { // ~800KB (Firestore limit is 1MB but we need overhead)
+            toast?.error?.("Content is too large. Did you paste a high-res image directly?");
+            setSaving(false);
+            return;
+        }
 
         try {
             setSaving(true);
@@ -231,11 +239,8 @@ const PostEditor = () => {
                 setTimeout(() => reject(new Error("Request timed out")), 15000)
             );
 
-            if (isNew) {
-                await Promise.race([createPost(postData), timeoutPromise]);
-            } else {
-                await Promise.race([updatePost(id, postData), timeoutPromise]);
-            }
+            const savePromise = isNew ? createPost(postToSave) : updatePost(id, postToSave);
+            await Promise.race([savePromise, timeoutPromise]);
 
             toast?.success?.(status === 'published' ? 'Post published successfully!' : 'Draft saved!');
             setTimeout(() => navigate('/admin/posts'), 600);

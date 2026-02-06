@@ -12,7 +12,8 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
-import { storage } from '../firebase';
+import { storage, auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const BlogContext = createContext(null);
 
@@ -21,6 +22,17 @@ export const useBlog = () => useContext(BlogContext);
 export const BlogProvider = ({ children }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+
+    // Track auth state
+    useEffect(() => {
+        if (!auth) return;
+        const unsub = onAuthStateChanged(auth, (u) => {
+            console.log("BlogContext: Auth State Changed", u ? `User: ${u.email} (${u.uid})` : "No User");
+            setUser(u);
+        });
+        return unsub;
+    }, []);
 
     // Real-time subscription to posts
     useEffect(() => {
@@ -32,7 +44,9 @@ export const BlogProvider = ({ children }) => {
 
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
 
+        console.log("BlogContext: Subscribing to posts...");
         const unsubscribe = onSnapshot(q, (snapshot) => {
+            console.log(`BlogContext: Posts update received (${snapshot.docs.length} items)`);
             const postsData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
@@ -218,13 +232,17 @@ export const BlogProvider = ({ children }) => {
     // Media state and subscription
     const [media, setMedia] = useState([]);
     useEffect(() => {
+        console.log("BlogContext: Subscribing to media...");
         const q = query(collection(db, 'media'), orderBy('uploadedAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
+            console.log(`BlogContext: Media update received (${snapshot.docs.length} items)`);
             setMedia(snapshot.docs.map(d => ({
                 id: d.id,
                 ...d.data(),
                 uploadedAt: d.data().uploadedAt?.toDate().toISOString() || new Date().toISOString()
             })));
+        }, (error) => {
+            console.error("BlogContext: Media Subscription Error:", error);
         });
         return () => unsubscribe();
     }, []);
