@@ -1,12 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useBlog } from '../../contexts/BlogContext';
-import { FileText, Eye, Clock, Plus } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext'; // Assuming this path for AuthContext
+import { FileText, Eye, Clock, Plus, Database } from 'lucide-react'; // Added Database icon
 import AdminHeader from '../../components/admin/AdminHeader';
 
 const AdminDashboard = () => {
-    const { posts } = useBlog();
+    const { posts, media, testFirestore } = useBlog();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
 
+    const handleTest = async () => {
+        const ok = await testFirestore();
+        if (ok) alert("Firestore Write OK!");
+        else alert("Firestore Write FAILED / TIMED OUT. Check console.");
+    };
     const publishedCount = posts.filter(p => p.status === 'published').length;
     const draftCount = posts.filter(p => p.status === 'draft').length;
     const totalViews = "--"; // TODO: Implement view tracking
@@ -24,12 +32,20 @@ const AdminDashboard = () => {
     );
 
     const headerActions = (
-        <Link
-            to="/admin/posts/new"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-        >
-            <Plus size={18} /> New Post
-        </Link>
+        <div className="flex items-center gap-3">
+            <button
+                onClick={handleTest}
+                className="p-2 text-xs font-bold text-amber-500 border border-amber-500/20 rounded-lg hover:bg-amber-500/10 transition-colors flex items-center gap-2"
+            >
+                <Database size={16} /> Test DB Write
+            </button>
+            <Link
+                to="/admin/posts/new"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+                <Plus size={18} /> New Post
+            </Link>
+        </div>
     );
 
     return (

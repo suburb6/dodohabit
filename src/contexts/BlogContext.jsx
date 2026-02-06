@@ -262,6 +262,29 @@ export const BlogProvider = ({ children }) => {
         }
     };
 
+    const testFirestore = async () => {
+        console.log("--- FIRESTORE DIAGNOSTIC START ---");
+        console.log("Time:", new Date().toISOString());
+        console.log("Auth User:", auth?.currentUser?.email || "NOT LOGGED IN");
+        console.log("Project ID:", auth?.app?.options?.projectId);
+
+        try {
+            console.log("Testing write to 'test_connection'...");
+            const testRef = await addDoc(collection(db, 'test_connection'), {
+                timestamp: serverTimestamp(),
+                user: auth?.currentUser?.email || 'anonymous',
+                test: true
+            });
+            console.log("TEST WRITE SUCCESS! ID:", testRef.id);
+            return true;
+        } catch (err) {
+            console.error("TEST WRITE FAILED:", err.code, err.message);
+            return false;
+        } finally {
+            console.log("--- FIRESTORE DIAGNOSTIC END ---");
+        }
+    };
+
     return (
         <BlogContext.Provider value={{
             posts,
@@ -274,7 +297,8 @@ export const BlogProvider = ({ children }) => {
             uploadImage,
             media,
             deleteMedia,
-            loading
+            loading,
+            testFirestore
         }}>
             {children}
         </BlogContext.Provider>

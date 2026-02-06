@@ -89,24 +89,6 @@ const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
                                     />
-
-                                    {/* Overlay info */}
-                                    <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-[2px] p-2 translate-y-full group-hover:translate-y-0 transition-transform">
-                                        <p className="text-[10px] text-white font-medium truncate">{item.originalName}</p>
-                                        <p className="text-[9px] text-white/70">
-                                            {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString() : 'Unknown date'}
-                                        </p>
-                                    </div>
-
-                                    {/* Selection Checkmark */}
-                                    {selectedId === item.id && (
-                                        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
-                                            <div className="bg-blue-500 text-white p-1.5 rounded-full shadow-lg">
-                                                <Check size={16} strokeWidth={3} />
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {/* Delete Button */}
                                     <button
                                         onClick={(e) => handleDelete(e, item)}
