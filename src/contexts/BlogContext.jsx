@@ -164,29 +164,27 @@ export const BlogProvider = ({ children }) => {
             };
 
             // Handle response
-            xhr.onload = async () => {
+            xhr.onload = () => {
                 if (xhr.status === 200) {
                     const response = JSON.parse(xhr.responseText);
                     const downloadURL = response.secure_url;
 
-                    try {
-                        // Store metadata in Firestore so your Media Library still works!
-                        await addDoc(collection(db, 'media'), {
+                    // Resolve IMMEDIATELY so the UI updates
+                    resolve(downloadURL);
+
+                    // Save metadata in background (fire and forget)
+                    // This way if Firestore rules fail, it doesn't block the user
+                    if (db) {
+                        addDoc(collection(db, 'media'), {
                             url: downloadURL,
-                            path: response.public_id, // Store Cloudinary Public ID
+                            path: response.public_id,
                             filename: file.name,
                             originalName: file.name,
                             type: file.type,
                             size: file.size,
                             source: 'cloudinary',
                             uploadedAt: serverTimestamp()
-                        });
-
-                        resolve(downloadURL);
-                    } catch (err) {
-                        console.error("Error saving media metadata (image still uploaded):", err);
-                        // Resolve anyway so the user can use the image
-                        resolve(downloadURL);
+                        }).catch(err => console.warn("Background metadata save failed:", err));
                     }
                 } else {
                     console.error("Cloudinary Error:", xhr.responseText);

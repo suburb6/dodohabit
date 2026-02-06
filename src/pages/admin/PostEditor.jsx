@@ -60,16 +60,16 @@ const PostEditor = () => {
         savedRef.current = false;
     }, [post]);
 
-    // Warn on reload / tab close when dirty
+    // Warn on reload / tab close when dirty or uploading
     useEffect(() => {
-        if (!dirty) return;
+        if (!dirty && !uploading) return;
         const handler = (e) => {
             e.preventDefault();
             e.returnValue = '';
         };
         window.addEventListener('beforeunload', handler);
         return () => window.removeEventListener('beforeunload', handler);
-    }, [dirty]);
+    }, [dirty, uploading]);
 
     // Parse TOC entries from content for the sidebar panel
     const tocEntries = useMemo(() => {
