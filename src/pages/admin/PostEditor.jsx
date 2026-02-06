@@ -10,7 +10,7 @@ import { useToast } from '../../contexts/ToastContext';
 const PostEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { getPostById, createPost, updatePost, uploadImage } = useBlog();
+    const { getPostById, createPost, updatePost, uploadImage, loading } = useBlog();
     const toast = useToast();
     const isNew = !id;
     const [uploading, setUploading] = useState(false);
@@ -37,15 +37,17 @@ const PostEditor = () => {
     });
 
     useEffect(() => {
+        if (loading) return;
         if (!isNew) {
             const existingPost = getPostById(id);
             if (existingPost) {
                 setPost(existingPost);
             } else {
+                console.warn(`Post ${id} not found in ${posts?.length || 0} posts`);
                 navigate('/admin/posts');
             }
         }
-    }, [id, isNew, getPostById, navigate]);
+    }, [id, isNew, getPostById, navigate, loading]);
 
     // Mark dirty on any post field change (skip initial load)
     const initialLoadDone = useRef(false);
@@ -348,7 +350,7 @@ const PostEditor = () => {
 
                     {/* Sidebar Settings */}
                     <div className="space-y-4">
-                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
                             <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
                                 Post Settings
                             </h3>

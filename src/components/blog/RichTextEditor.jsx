@@ -170,11 +170,17 @@ const RichTextEditor = ({
             const level = levelOverride || 'main';
 
             const id = `toc-${Date.now()}-${slugifyForId(label) || 'section'}`;
-            const { from } = editor.state.selection;
+            const { from, empty } = editor.state.selection;
+
+            // Insert AT current position (start of selection), DO NOT replace text
+            // We collapse the selection to 'from' first
             editor
                 .chain()
                 .focus()
-                .insertContentAt(from, { type: 'tocAnchor', attrs: { id, label, level } })
+                .setTextSelection(from) // Collapse to start
+                .insertContent({ type: 'tocAnchor', attrs: { id, label, level } })
+                // Add a space after if it was empty to prevent typing inside the atom? 
+                // Actually an atom is a block so cursor moves after.
                 .run();
         }
 
