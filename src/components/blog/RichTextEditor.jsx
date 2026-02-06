@@ -57,6 +57,17 @@ const RichTextEditor = ({
         },
     });
 
+    // Update editor content when prop key changes (async load fix)
+    useEffect(() => {
+        if (editor && content !== editor.getHTML()) {
+            // Only update if significantly different to avoid cursor jumps
+            // Ideally we'd compare parsed JSON but HTML approx is okay for initial load
+            if (Math.abs(content.length - editor.getHTML().length) > 10 || content === '') {
+                editor.commands.setContent(content);
+            }
+        }
+    }, [content, editor]);
+
     const fileInputRef = React.useRef(null);
 
     const handleImageUpload = async (e) => {
