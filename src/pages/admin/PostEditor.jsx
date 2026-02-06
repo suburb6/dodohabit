@@ -212,11 +212,18 @@ const PostEditor = () => {
             setSaving(true);
             savedRef.current = true;
             setDirty(false);
+
+            // Timeout promise to prevent infinite loading
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
             if (isNew) {
-                await createPost(postData);
+                await Promise.race([createPost(postData), timeoutPromise]);
             } else {
-                await updatePost(id, postData);
+                await Promise.race([updatePost(id, postData), timeoutPromise]);
             }
+
             toast?.success?.(status === 'published' ? 'Post published successfully!' : 'Draft saved!');
             setTimeout(() => navigate('/admin/posts'), 600);
         } catch (error) {
@@ -224,7 +231,11 @@ const PostEditor = () => {
             savedRef.current = false;
             setDirty(true);
             setSaving(false);
-            toast?.error?.(`Failed to ${status === 'published' ? 'publish' : 'save'}: ${error?.message || 'Unknown error'}`);
+            if (error.message === "Request timed out") {
+                toast?.error?.("The operation timed out. Please check your internet connection.");
+            } else {
+                toast?.error?.(`Failed to ${status === 'published' ? 'publish' : 'save'}: ${error?.message || 'Unknown error'}`);
+            }
         }
     };
 
