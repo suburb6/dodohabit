@@ -100,9 +100,9 @@ const ImageUploader = ({
     return (
         <div className="space-y-3">
             <div
-                className={`relative w-full ${height} border-2 border-dashed rounded-xl overflow-hidden transition-colors group
+                className={`relative w-full min-h-[14rem] border-2 border-dashed rounded-xl overflow-hidden transition-all group
                     ${dragActive ? "border-blue-500 bg-blue-500/10" : "border-[var(--border-color)] hover:border-blue-500/50 hover:bg-[var(--bg-secondary)]"}
-                    ${!displayImage ? "bg-[var(--bg-secondary)]" : ""}
+                    ${!displayImage ? "bg-[var(--bg-secondary)]/50" : ""}
                 `}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -123,7 +123,7 @@ const ImageUploader = ({
                         <img
                             src={displayImage}
                             alt="Uploaded"
-                            className={`w-full h-full object-cover ${uploading ? 'opacity-50 blur-sm' : ''}`}
+                            className={`w-full h-56 object-cover ${uploading ? 'opacity-50 blur-sm' : ''}`}
                         />
 
                         {uploading && (
@@ -166,30 +166,30 @@ const ImageUploader = ({
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current.click()}
-                                        className="px-4 py-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                                        className="px-4 py-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors border border-white/10"
                                     >
-                                        <Upload size={16} /> Upload New
+                                        <Upload size={16} /> Replace
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setIsLibraryOpen(true)}
-                                        className="px-4 py-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                                        className="px-4 py-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors border border-white/10"
                                     >
                                         <Library size={16} /> Library
                                     </button>
                                 </div>
                                 <button
                                     onClick={removeImage}
-                                    className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 backdrop-blur-md rounded-full transition-colors z-10"
+                                    className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 backdrop-blur-md rounded-full transition-colors z-10 text-white"
                                     title="Remove image"
                                 >
-                                    <X size={16} color="white" />
+                                    <X size={16} />
                                 </button>
                             </>
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)] gap-4 p-6">
+                    <div className="flex flex-col items-center justify-center p-8 text-[var(--text-secondary)] gap-5">
                         {uploading ? (
                             <div className="flex flex-col items-center">
                                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
@@ -198,37 +198,39 @@ const ImageUploader = ({
                         ) : (
                             <>
                                 <div className="flex flex-col items-center gap-2">
-                                    <div className="w-12 h-12 rounded-full bg-[var(--bg-primary)] flex items-center justify-center mb-1">
-                                        <ImageIcon size={24} className="text-[var(--text-secondary)]" />
+                                    <div className="w-14 h-14 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center mb-1 shadow-sm">
+                                        <ImageIcon size={28} className="text-[var(--text-secondary)] opacity-70" />
                                     </div>
-                                    <p className="font-medium text-[var(--text-primary)]">Featured Image</p>
-                                    <p className="text-sm text-[var(--text-secondary)] text-center max-w-[200px]">
-                                        Drag & drop or select source
+                                    <p className="font-semibold text-[var(--text-primary)] text-base">Featured Image</p>
+                                    <p className="text-sm text-[var(--text-secondary)] text-center max-w-[240px] leading-relaxed">
+                                        Upload a high-quality image for your post or select one from your library
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 mt-1">
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current.click()}
-                                        className="px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-blue-500 hover:text-blue-500 text-[var(--text-primary)] rounded-lg flex items-center gap-2 text-sm transition-all shadow-sm"
+                                        className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-all shadow-sm hover:shadow-md"
                                     >
                                         <Upload size={16} /> Upload Device
                                     </button>
-                                    <span className="text-xs text-[var(--text-secondary)]">or</span>
+                                    <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider px-1">or</span>
                                     <button
                                         type="button"
                                         onClick={() => setIsLibraryOpen(true)}
-                                        className="px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-purple-500 hover:text-purple-500 text-[var(--text-primary)] rounded-lg flex items-center gap-2 text-sm transition-all shadow-sm"
+                                        className="px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--text-secondary)] text-[var(--text-primary)] rounded-lg flex items-center gap-2 text-sm font-medium transition-all shadow-sm"
                                     >
                                         <Library size={16} /> Open Library
                                     </button>
                                 </div>
 
                                 {recommendedText && (
-                                    <p className="text-xs text-[var(--text-secondary)] mt-2 opacity-75">
-                                        Recommended: {recommendedText}
-                                    </p>
+                                    <div className="mt-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+                                        <p className="text-xs text-blue-400 font-medium">
+                                            {recommendedText}
+                                        </p>
+                                    </div>
                                 )}
                             </>
                         )}
