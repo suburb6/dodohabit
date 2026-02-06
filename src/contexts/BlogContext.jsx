@@ -24,6 +24,7 @@ export const BlogProvider = ({ children }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [media, setMedia] = useState([]);
 
     // Track auth state
     useEffect(() => {
@@ -37,7 +38,8 @@ export const BlogProvider = ({ children }) => {
 
     // Data Fetching via REST (Socket Bypass)
     const fetchData = async () => {
-        if (!user) return; // Only fetch if logged in (or public logic handled elsewhere)
+        // Allow public fetch (REST utility now handles unauthenticated requests)
+        // if (!user) return; 
 
         setLoading(true);
         console.log("BlogContext: Fetching data via REST...");
@@ -46,13 +48,13 @@ export const BlogProvider = ({ children }) => {
             // Fetch Posts
             const postsData = await restGetDocs('posts');
             // Sort manually (REST sort is complex)
-            postsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            postsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             setPosts(postsData);
             console.log(`BlogContext: Fetched ${postsData.length} posts`);
 
             // Fetch Media
             const mediaData = await restGetDocs('media');
-            mediaData.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+            mediaData.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
             setMedia(mediaData);
             console.log(`BlogContext: Fetched ${mediaData.length} media items`);
 
@@ -63,11 +65,13 @@ export const BlogProvider = ({ children }) => {
         }
     };
 
-    // Initial Fetch when user logs in
+    // Initial Fetch when app loads (auth state change or not)
     useEffect(() => {
-        if (user) {
-            fetchData();
-        }
+        fetchData();
+
+        // If user logs in later, we might want to re-fetch to see protected drafts if we implemented that,
+        // but for now the main priority is ensuring public users see content.
+        // We'll keep the dependency on `user` to re-fetch if auth state changes (e.g. login as admin)
     }, [user]);
 
     const getPost = (slug) => {
@@ -237,8 +241,7 @@ export const BlogProvider = ({ children }) => {
         });
     };
 
-    // Media state separate from posts (handled in fetchData now used by both)
-    const [media, setMedia] = useState([]);
+
 
     const deleteMedia = async (mediaItem) => {
         try {

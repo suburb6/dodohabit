@@ -155,14 +155,22 @@ export const restDeleteDoc = async (collectionName, docId) => {
 // Generic REST Get All (List)
 export const restGetDocs = async (collectionName) => {
     try {
-        const token = await auth.currentUser.getIdToken();
+        let token = null;
+        if (auth.currentUser) {
+            try {
+                token = await auth.currentUser.getIdToken();
+            } catch (e) {
+                console.warn("REST: Failed to get token, attempting public access", e);
+            }
+        }
+
         const url = `${getBaseUrl()}/${collectionName}?pageSize=100`;
+
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
         const response = await fetch(url, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers
         });
 
         if (!response.ok) {
