@@ -138,6 +138,19 @@ const PostEditor = () => {
             type: file.type
         });
 
+        // Check if this is a library item (object with url) or a raw file
+        if (!file.name && file.url) {
+            // It's a library item
+            setPost({
+                ...post,
+                featuredImage: file.url,
+                featuredImageCaption: file.caption || post.featuredImageCaption || '',
+                featuredImageAlt: file.alt || post.featuredImageAlt || '',
+                featuredImageCredit: file.credit || post.featuredImageCredit || ''
+            });
+            return;
+        }
+
         try {
             setUploading(true);
             setUploadProgress(0);
