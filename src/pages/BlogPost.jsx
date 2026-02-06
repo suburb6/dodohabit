@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlog } from '../contexts/BlogContext';
 import ShareButtons from '../components/blog/ShareButtons';
-import { ArrowLeft, Clock, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import '../components/blog/editor.css'; // Reuse editor styles for content
+import TocNav from '../components/blog/TocNav';
 
 const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const slugifyForId = (value) =>
@@ -66,7 +67,7 @@ const BlogPost = () => {
                 items.push({
                     id,
                     text,
-                    level: isAnchor ? 'custom' : el.tagName.toLowerCase(),
+                    level: isAnchor ? 'sub' : el.tagName.toLowerCase(),
                 });
             });
 
@@ -133,12 +134,15 @@ const BlogPost = () => {
         : (plainText ? `${plainText.substring(0, 160)}${plainText.length > 160 ? '…' : ''}` : undefined);
 
     const stats = readingTime(post.content);
-    const date = new Date(post.publishedAt || post.createdAt).toLocaleDateString(undefined, {
+    const publishedAt = post.publishedAt || post.createdAt || new Date();
+    const updatedAt = post.updatedAt || null;
+    const date = new Date(publishedAt).toLocaleDateString(undefined, {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
+    const showUpdated = updatedAt && publishedAt && new Date(updatedAt).toDateString() !== new Date(publishedAt).toDateString();
 
     return (
         <article className="min-h-screen pt-32 pb-20">
@@ -165,9 +169,9 @@ const BlogPost = () => {
                         <Clock size={18} className="text-blue-500" />
                         <span>{stats.text}</span>
                     </div>
-                    {post.updatedAt !== post.publishedAt && (
+                    {showUpdated && (
                         <div className="text-gray-600 text-xs mt-1 w-full">
-                            Last updated: {new Date(post.updatedAt).toLocaleDateString()}
+                            Last updated: {new Date(updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
                     )}
                 </div>
@@ -217,9 +221,17 @@ const BlogPost = () => {
                 {/* Table of Contents - Desktop Sidebar */}
                 <div className="hidden lg:block lg:col-span-3">
                     <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl mb-8">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
-                            <span className="font-bold text-lg">{post.authorName ? post.authorName.charAt(0) : 'D'}</span>
-                        </div>
+                        {post.authorImage ? (
+                            <img
+                                src={post.authorImage}
+                                alt={post.authorName || 'Author'}
+                                className="w-12 h-12 rounded-full object-cover shadow-lg shrink-0"
+                            />
+                        ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
+                                <span className="font-bold text-lg">{post.authorName ? post.authorName.charAt(0) : 'D'}</span>
+                            </div>
+                        )}
                         <div>
                             <span className="font-bold text-[var(--text-primary)] block text-lg">{post.authorName || 'Dodohabit Team'}</span>
                             <span className="text-sm text-[var(--text-secondary)]">{post.authorTitle || 'Building habits that stick.'}</span>
@@ -227,34 +239,18 @@ const BlogPost = () => {
                     </div>
 
                     <div className="sticky top-32 space-y-4">
-                        <h3 className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">
+                        <h3 className="text-base font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-4">
                             Table of Contents
                         </h3>
                         {toc.length > 0 ? (
-                            <nav className="space-y-1">
-                                {toc.map((item) => (
-                                    <a
-                                        key={item.id}
-                                        href={`#${item.id}`}
-                                        className={`block py-2 text-sm transition-colors border-l-2 pl-4 ${item.level === 'h2' || item.level === 'custom'
-                                            ? 'text-[var(--text-primary)]'
-                                            : 'text-[var(--text-secondary)] ml-2'
-                                            } ${activeId === item.id
-                                                ? 'border-blue-500'
-                                                : (item.level === 'h2' || item.level === 'custom'
-                                                    ? 'border-[var(--border-color)] hover:border-blue-500'
-                                                    : 'border-transparent hover:text-[var(--text-primary)]')
-                                            }`}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setActiveId(item.id);
-                                            document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
-                                        }}
-                                    >
-                                        {item.text}
-                                    </a>
-                                ))}
-                            </nav>
+                            <TocNav
+                                items={toc}
+                                activeId={activeId}
+                                onNavigate={(id) => {
+                                    setActiveId(id);
+                                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                            />
                         ) : (
                             <p className="text-sm text-gray-600 italic">No sections found</p>
                         )}

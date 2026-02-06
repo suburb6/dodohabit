@@ -20,7 +20,7 @@ const TocAnchor = Node.create({
                 default: null,
             },
             level: {
-                default: 'main', // 'main' or 'sub'
+                default: 'sub', // 'main' or 'sub'
             },
         };
     },
@@ -34,7 +34,7 @@ const TocAnchor = Node.create({
                     return {
                         id: dom.getAttribute('id') || dom.dataset.tocId || null,
                         label: dom.dataset.tocLabel || null,
-                        level: dom.dataset.tocLevel || 'main',
+                        level: dom.dataset.tocLevel || 'sub',
                     };
                 },
             },
@@ -44,7 +44,7 @@ const TocAnchor = Node.create({
     renderHTML({ HTMLAttributes }) {
         const id = HTMLAttributes.id || HTMLAttributes['data-toc-id'] || null;
         const label = HTMLAttributes.label || HTMLAttributes['data-toc-label'] || null;
-        const level = HTMLAttributes.level || 'main'; // Ensure default
+        const level = HTMLAttributes.level || 'sub'; // Ensure default
 
         return [
             'span',

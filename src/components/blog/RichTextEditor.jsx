@@ -18,6 +18,13 @@ const slugifyForId = (value) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+const getAutoTocLabel = (text, maxWords = 6) => {
+    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
+    if (!words[0]) return '';
+    if (words.length <= maxWords) return words.join(' ');
+    return `${words.slice(0, maxWords).join(' ')}...`;
+};
+
 const RichTextEditor = ({
     content,
     onChange,
@@ -142,7 +149,7 @@ const RichTextEditor = ({
                 setTocMenu({
                     x: e.clientX,
                     y: e.clientY,
-                    label: trimmed,
+                    label: getAutoTocLabel(trimmed),
                     selectionText: trimmed,
                     isExisting: isAhc
                 });
@@ -178,7 +185,7 @@ const RichTextEditor = ({
             // ADD Logic ('main' or 'sub')
             const label = tocMenu.label.replace(/\s+/g, ' ').trim();
             if (!label) return;
-            const level = levelOverride || 'main';
+            const level = levelOverride || 'sub';
 
             const id = `toc-${Date.now()}-${slugifyForId(label) || 'section'}`;
             const { from, empty } = editor.state.selection;
@@ -236,22 +243,13 @@ const RichTextEditor = ({
                                 <X size={14} /> Remove Entry
                             </button>
                         ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => handleTocAction('main')}
-                                    className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
-                                >
-                                    Add Main
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleTocAction('sub')}
-                                    className="px-3 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
-                                >
-                                    Add Sub
-                                </button>
-                            </>
+                            <button
+                                type="button"
+                                onClick={() => handleTocAction('sub')}
+                                className="col-span-2 px-3 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
+                            >
+                                Add TOC Entry
+                            </button>
                         )}
 
                         <button

@@ -3,12 +3,15 @@ import { useBlog } from '../contexts/BlogContext';
 import BlogCard from '../components/blog/BlogCard';
 import SEO from '../components/SEO';
 import { motion } from 'framer-motion';
+import { readingTime } from 'reading-time-estimator';
+import { formatBlogDate } from '../utils/dateFormat';
 
 const Blog = () => {
     const { getPublishedPosts, loading } = useBlog();
     const posts = getPublishedPosts();
     const featuredPost = posts[0];
     const recentPosts = posts.slice(1);
+    const featuredStats = featuredPost ? readingTime(featuredPost.content || '') : null;
 
     if (loading) {
         return (
@@ -77,11 +80,20 @@ const Blog = () => {
                             <div className="flex items-center gap-2 text-sm text-blue-500 font-bold uppercase tracking-wider">
                                 <span>Latest Update</span>
                                 <span className="w-1 h-1 rounded-full bg-blue-500"></span>
-                                <span>{new Date(featuredPost.publishedAt).toLocaleDateString()}</span>
+                                <span>{formatBlogDate(featuredPost.publishedAt || featuredPost.createdAt)}</span>
                             </div>
                             <h3 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] leading-tight hover:text-blue-500 transition-colors cursor-pointer">
                                 <a href={`/blog/${featuredPost.slug}`}>{featuredPost.title}</a>
                             </h3>
+                            {(featuredPost.authorName || featuredStats?.text) && (
+                                <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                                    {featuredPost.authorName && <span>By {featuredPost.authorName}</span>}
+                                    {featuredPost.authorName && featuredStats?.text && (
+                                        <span className="w-1 h-1 rounded-full bg-[var(--border-color)]"></span>
+                                    )}
+                                    {featuredStats?.text && <span>{featuredStats.text}</span>}
+                                </div>
+                            )}
                             <p className="text-[var(--text-secondary)] text-lg leading-relaxed line-clamp-3">
                                 {featuredPost.excerpt}
                             </p>

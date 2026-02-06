@@ -8,11 +8,13 @@ const ImageUploader = ({
     uploading = false,
     progress = 0,
     onCancel,
-    height = "h-48",
+    height = "h-56",
     fileDetails = null, // { name, size, type }
     recommendedText = null,
     metadata = null, // { caption, alt, credit }
-    onMetadataChange = null
+    onMetadataChange = null,
+    titleText = 'Featured Image',
+    descriptionText = 'Upload a high-quality image for your post or select one from your library'
 }) => {
     const fileInputRef = useRef(null);
     const [dragActive, setDragActive] = useState(false);
@@ -100,7 +102,7 @@ const ImageUploader = ({
     return (
         <div className="space-y-3">
             <div
-                className={`relative w-full min-h-[14rem] border-2 border-dashed rounded-xl overflow-hidden transition-all group
+                className={`relative w-full ${height} border-2 border-dashed rounded-xl overflow-hidden transition-all group
                     ${dragActive ? "border-blue-500 bg-blue-500/10" : "border-[var(--border-color)] hover:border-blue-500/50 hover:bg-[var(--bg-secondary)]"}
                     ${!displayImage ? "bg-[var(--bg-secondary)]/50" : ""}
                 `}
@@ -123,7 +125,7 @@ const ImageUploader = ({
                         <img
                             src={displayImage}
                             alt="Uploaded"
-                            className={`w-full h-56 object-cover ${uploading ? 'opacity-50 blur-sm' : ''}`}
+                            className={`w-full h-full object-cover ${uploading ? 'opacity-50 blur-sm' : ''}`}
                         />
 
                         {uploading && (
@@ -189,7 +191,7 @@ const ImageUploader = ({
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-[var(--text-secondary)] gap-5">
+                    <div className="flex flex-col items-center justify-center p-8 text-[var(--text-secondary)] gap-5 h-full">
                         {uploading ? (
                             <div className="flex flex-col items-center">
                                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
@@ -201,9 +203,9 @@ const ImageUploader = ({
                                     <div className="w-14 h-14 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center mb-1 shadow-sm">
                                         <ImageIcon size={28} className="text-[var(--text-secondary)] opacity-70" />
                                     </div>
-                                    <p className="font-semibold text-[var(--text-primary)] text-base">Featured Image</p>
+                                    <p className="font-semibold text-[var(--text-primary)] text-base">{titleText}</p>
                                     <p className="text-sm text-[var(--text-secondary)] text-center max-w-[240px] leading-relaxed">
-                                        Upload a high-quality image for your post or select one from your library
+                                        {descriptionText}
                                     </p>
                                 </div>
 

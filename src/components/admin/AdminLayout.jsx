@@ -41,7 +41,7 @@ const AdminLayout = () => {
         <Link
             to={to}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm 
-                justify-start md:justify-center xl:justify-start
+                justify-start md:justify-center 2xl:justify-start
                 ${isActive(activeCheck || to)
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
@@ -50,7 +50,7 @@ const AdminLayout = () => {
             title={label}
         >
             <Icon size={20} className="shrink-0" />
-            <span className="font-medium md:hidden xl:block whitespace-nowrap">{label}</span>
+            <span className="font-medium md:hidden 2xl:block whitespace-nowrap">{label}</span>
         </Link>
     );
 

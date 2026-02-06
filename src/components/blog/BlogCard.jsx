@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight } from 'lucide-react';
 import { readingTime } from 'reading-time-estimator';
+import { formatBlogDate } from '../../utils/dateFormat';
 
 const BlogCard = ({ post }) => {
     const stats = readingTime(post.content);
@@ -26,7 +27,7 @@ const BlogCard = ({ post }) => {
                 <div className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)] mb-3 uppercase tracking-wider">
                     <span className="text-blue-500 font-bold">Blog</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]"></span>
-                    <span>{new Date(post.publishedAt || post.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                    <span>{formatBlogDate(post.publishedAt || post.createdAt)}</span>
                 </div>
 
                 <h3 className="mt-2 text-xl font-bold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors line-clamp-2">
@@ -35,16 +36,24 @@ const BlogCard = ({ post }) => {
                         {post.title}
                     </Link>
                 </h3>
+                {(post.authorName || stats?.text) && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                        {post.authorName && <span>By {post.authorName}</span>}
+                        {post.authorName && stats?.text && <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />}
+                        {stats?.text && (
+                            <span className="inline-flex items-center gap-1">
+                                <Clock size={12} className="text-blue-500" />
+                                {stats.text}
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--text-secondary)] flex-1">
                     {post.excerpt || post.content.replace(/<[^>]+>/g, '').substring(0, 150) + '...'}
                 </p>
 
-                <div className="mt-6 flex items-center justify-between w-full border-t border-[var(--border-color)] pt-4">
-                    <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-                        <Clock size={14} className="text-blue-500" />
-                        {stats.text}
-                    </div>
+                <div className="mt-6 flex items-center justify-end w-full border-t border-[var(--border-color)] pt-4">
                     <div className="flex items-center gap-1 text-sm font-bold text-blue-500 group-hover:gap-2 transition-all">
                         Read Article <ArrowRight size={16} />
                     </div>
