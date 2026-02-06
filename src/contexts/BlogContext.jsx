@@ -266,19 +266,41 @@ export const BlogProvider = ({ children }) => {
         console.log("--- FIRESTORE DIAGNOSTIC START ---");
         console.log("Time:", new Date().toISOString());
         console.log("Auth User:", auth?.currentUser?.email || "NOT LOGGED IN");
-        console.log("Project ID:", auth?.app?.options?.projectId);
+
+        // Short timeout for test
+        const testTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Diagnostic timeout (10s)")), 10000)
+        );
 
         try {
-            console.log("Testing write to 'test_connection'...");
-            const testRef = await addDoc(collection(db, 'test_connection'), {
-                timestamp: serverTimestamp(),
-                user: auth?.currentUser?.email || 'anonymous',
-                test: true
-            });
-            console.log("TEST WRITE SUCCESS! ID:", testRef.id);
+            console.log("Step 1: Simple write to 'media' (WITHOUT serverTimestamp)...");
+            const testRef = await Promise.race([
+                addDoc(collection(db, 'media'), {
+                    url: 'https://example.com/test.jpg',
+                    test: true,
+                    manualTime: new Date().toISOString()
+                }),
+                testTimeout
+            ]);
+            console.log("STEP 1 SUCCESS! ID:", testRef.id);
+
+            console.log("Step 2: Write with serverTimestamp...");
+            const tsRef = await Promise.race([
+                addDoc(collection(db, 'media'), {
+                    url: 'https://example.com/test2.jpg',
+                    test: true,
+                    uploadedAt: serverTimestamp()
+                }),
+                testTimeout
+            ]);
+            console.log("STEP 2 SUCCESS! ID:", tsRef.id);
+
             return true;
         } catch (err) {
-            console.error("TEST WRITE FAILED:", err.code, err.message);
+            console.error("DIAGNOSTIC FAILED AT STEP:", err.message);
+            if (err.message.includes("Diagnostic timeout")) {
+                console.warn("ADVICE: Long Polling is enabled, but the write still timed out. This usually means a strict corporate firewall or an invalid Project ID in .env");
+            }
             return false;
         } finally {
             console.log("--- FIRESTORE DIAGNOSTIC END ---");

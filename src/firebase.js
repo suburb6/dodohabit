@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -35,9 +35,8 @@ if (isConfigValid) {
     try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
-        db = getFirestore(app, {
+        db = initializeFirestore(app, {
             experimentalForceLongPolling: true,
-            useFetchStreams: false,
         });
         storage = getStorage(app);
         firebaseEnabled = true;
