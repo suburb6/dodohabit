@@ -305,7 +305,8 @@ export const BlogProvider = ({ children }) => {
                 try {
                     const token = await auth.currentUser.getIdToken();
                     const projectId = auth.app.options.projectId;
-                    const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/test_rest`;
+                    // Target 'media' collection which SHOULD be allowed by rules
+                    const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/media`;
 
                     console.log(`Sending REST request to: ${restUrl}`);
 
@@ -318,7 +319,8 @@ export const BlogProvider = ({ children }) => {
                         body: JSON.stringify({
                             fields: {
                                 test: { booleanValue: true },
-                                timestamp: { stringValue: new Date().toISOString() },
+                                uploadedAt: { timestampValue: new Date().toISOString() },
+                                originalName: { stringValue: "REST_TEST_ENTRY" },
                                 user: { stringValue: auth.currentUser.email }
                             }
                         })
