@@ -15,6 +15,9 @@ const PostEditor = () => {
     const isNew = !id;
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [dirty, setDirty] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [tocOpen, setTocOpen] = useState(true);
     const savedRef = useRef(false);
 
     const [post, setPost] = useState({
