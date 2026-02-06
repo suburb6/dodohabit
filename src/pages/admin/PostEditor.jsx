@@ -103,7 +103,7 @@ const PostEditor = () => {
         const div = document.createElement('div');
         div.innerHTML = post.content;
         const el = div.querySelector(`span[data-toc-anchor="true"]#${CSS.escape(anchorId)}`) ||
-                    div.querySelector(`span[data-toc-anchor="true"][data-toc-id="${CSS.escape(anchorId)}"]`);
+            div.querySelector(`span[data-toc-anchor="true"][data-toc-id="${CSS.escape(anchorId)}"]`);
         if (el) {
             el.remove();
             setPost((p) => ({ ...p, content: div.innerHTML }));
@@ -207,6 +207,7 @@ const PostEditor = () => {
         <div className="flex flex-col min-h-full bg-[var(--bg-primary)]">
             <AdminHeader
                 title={post.title || (isNew ? 'New Post' : 'Untitled Post')}
+                status={post.status || 'draft'}
                 uploading={uploading}
                 actions={headerActions}
             />
@@ -229,6 +230,7 @@ const PostEditor = () => {
                             <ImageUploader
                                 image={post.featuredImage}
                                 onChange={handleFeaturedImageChange}
+                                uploading={uploading}
                                 height="h-48"
                             />
                         </div>
@@ -358,9 +360,8 @@ const PostEditor = () => {
                                                         return (
                                                             <div
                                                                 key={i}
-                                                                className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group ${
-                                                                    isHidden ? 'opacity-50' : ''
-                                                                }`}
+                                                                className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 group ${isHidden ? 'opacity-50' : ''
+                                                                    }`}
                                                             >
                                                                 <Hash size={12} className={`shrink-0 ${h.level === 'h1' ? 'text-blue-500' : h.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
                                                                 <span className={`text-xs truncate flex-1 ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
