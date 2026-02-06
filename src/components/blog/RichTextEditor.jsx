@@ -30,15 +30,15 @@ const RichTextEditor = ({
     const editor = useEditor({
         extensions: [
             StarterKit,
-            Underline,
+            // Underline, // Potentially duplicate
             TocAnchor,
             Image.configure({
                 inline: true,
                 allowBase64: true,
             }),
-            Link.configure({
-                openOnClick: false,
-            }),
+            // Link.configure({ // Potentially duplicate
+            //     openOnClick: false,
+            // }),
             Placeholder.configure({
                 placeholder,
             }),

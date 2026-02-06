@@ -66,19 +66,21 @@ export const BlogProvider = ({ children }) => {
             ? createSlug(postData.slug)
             : createSlug(postData.title);
 
-        // For production, we should upload image to Storage and get URL
-        // Currently utilizing Base64 directly into Firestore (limit 1MB per doc)
-        // If images are large, this might fail. 
-        // TODO: Implement Firebase Storage upload here
+        console.log("createPost: Initiating write...", { title: postData.title, slug });
 
         try {
-            const newPostRef = await addDoc(collection(db, 'posts'), {
+            const payload = {
                 ...postData,
                 slug,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 publishedAt: postData.status === 'published' ? serverTimestamp() : null
-            });
+            };
+
+            console.log("createPost: Payload prepared", payload);
+
+            const newPostRef = await addDoc(collection(db, 'posts'), payload);
+            console.log("createPost: Write success!", newPostRef.id);
             return newPostRef.id;
         } catch (error) {
             console.error("Error creating post:", error);
@@ -87,6 +89,7 @@ export const BlogProvider = ({ children }) => {
     };
 
     const updatePost = async (id, updates) => {
+        console.log(`updatePost: Updating ${id}...`, updates);
         try {
             const postRef = doc(db, 'posts', id);
 
@@ -106,7 +109,10 @@ export const BlogProvider = ({ children }) => {
                 updateData.publishedAt = serverTimestamp();
             }
 
+            console.log("updatePost: Payload prepared", updateData);
+
             await updateDoc(postRef, updateData);
+            console.log("updatePost: Write success!");
         } catch (error) {
             console.error("Error updating post:", error);
             throw error;
