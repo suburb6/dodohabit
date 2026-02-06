@@ -298,6 +298,52 @@ export const BlogProvider = ({ children }) => {
             return true;
         } catch (err) {
             console.error("DIAGNOSTIC FAILED AT STEP:", err.message);
+
+            // Step 3: REST API Fallback (The "200iq" move)
+            if (err.message.includes("diagnostic timeout") || err.message.includes("Diagnostic timeout")) {
+                console.log("--- ATTEMPTING EMERGENCY REST API TEST ---");
+                try {
+                    const token = await auth.currentUser.getIdToken();
+                    const projectId = auth.app.options.projectId;
+                    const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/test_rest`;
+
+                    console.log(`Sending REST request to: ${restUrl}`);
+
+                    const response = await fetch(restUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            fields: {
+                                test: { booleanValue: true },
+                                timestamp: { stringValue: new Date().toISOString() },
+                                user: { stringValue: auth.currentUser.email }
+                            }
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("✅ REST WRITE SUCCESS!", data);
+                        console.log("CONCLUSION: Your Project ID and Rules are CORRECT. The issue is purely the Firebase SDK Connection (likely blocked by a firewall or proxy).");
+                        console.log("RECOMMENDATION: We can switch to using REST for writes if this persists.");
+                        alert("REST API Write SUCCEEDED! The app is blocked by a network firewall, but the database works.");
+                        return true;
+                    } else {
+                        const errText = await response.text();
+                        console.error("❌ REST WRITE FAILED:", response.status, errText);
+                        console.log("CONCLUSION: This is a Server-Side issue (Rules, Project ID, or Quotas).");
+                        alert(`REST Failed: ${response.status}. Check console for details.`);
+                        return false;
+                    }
+                } catch (restErr) {
+                    console.error("❌ REST NETWORK FAIL:", restErr);
+                    return false;
+                }
+            }
+
             if (err.message.includes("Diagnostic timeout")) {
                 console.warn("ADVICE: Long Polling is enabled, but the write still timed out. This usually means a strict corporate firewall or an invalid Project ID in .env");
             }
