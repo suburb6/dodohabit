@@ -14,7 +14,7 @@ import {
 import { ref, deleteObject } from 'firebase/storage';
 import { storage, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { restAddDoc, restUpdateDoc, restDeleteDoc } from '../utils/firestoreRest';
+import { restAddDoc, restUpdateDoc, restDeleteDoc, restGetDocs } from '../utils/firestoreRest';
 
 const BlogContext = createContext(null);
 
@@ -35,37 +35,40 @@ export const BlogProvider = ({ children }) => {
         return unsub;
     }, []);
 
-    // Real-time subscription to posts
-    useEffect(() => {
-        // If db is not initialized, skip subscription
-        if (!db) {
-            setLoading(false);
-            return;
-        }
+    // Data Fetching via REST (Socket Bypass)
+    const fetchData = async () => {
+        if (!user) return; // Only fetch if logged in (or public logic handled elsewhere)
 
-        const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+        setLoading(true);
+        console.log("BlogContext: Fetching data via REST...");
 
-        console.log("BlogContext: Subscribing to posts...");
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log(`BlogContext: Posts update received (${snapshot.docs.length} items)`);
-            const postsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                // Safely handle timestamps (pending writes can be null)
-                createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate().toISOString() : new Date().toISOString(),
-                updatedAt: doc.data().updatedAt?.toDate ? doc.data().updatedAt.toDate().toISOString() : new Date().toISOString(),
-                publishedAt: doc.data().publishedAt?.toDate ? doc.data().publishedAt.toDate().toISOString() : null
-            }));
-
+        try {
+            // Fetch Posts
+            const postsData = await restGetDocs('posts');
+            // Sort manually (REST sort is complex)
+            postsData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setPosts(postsData);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching posts:", error);
-            setLoading(false);
-        });
+            console.log(`BlogContext: Fetched ${postsData.length} posts`);
 
-        return () => unsubscribe();
-    }, []);
+            // Fetch Media
+            const mediaData = await restGetDocs('media');
+            mediaData.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+            setMedia(mediaData);
+            console.log(`BlogContext: Fetched ${mediaData.length} media items`);
+
+        } catch (error) {
+            console.error("BlogContext: Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Initial Fetch when user logs in
+    useEffect(() => {
+        if (user) {
+            fetchData();
+        }
+    }, [user]);
 
     const getPost = (slug) => {
         return posts.find(post => post.slug === slug);
@@ -97,6 +100,7 @@ export const BlogProvider = ({ children }) => {
             // Use REST Add
             const newPost = await restAddDoc('posts', payload);
             console.log("createPost: REST Write success!", newPost.id);
+            fetchData(); // Refresh list
             return newPost.id;
         } catch (error) {
             console.error("Error creating post:", error);
@@ -127,6 +131,7 @@ export const BlogProvider = ({ children }) => {
 
             await restUpdateDoc('posts', id, updateData);
             console.log("updatePost: REST Write success!");
+            fetchData(); // Refresh list
         } catch (error) {
             console.error("Error updating post:", error);
             throw error;
@@ -136,6 +141,7 @@ export const BlogProvider = ({ children }) => {
     const deletePost = async (id) => {
         try {
             await restDeleteDoc('posts', id);
+            fetchData(); // Refresh list
         } catch (error) {
             console.error("Error deleting post:", error);
             throw error;
@@ -206,7 +212,10 @@ export const BlogProvider = ({ children }) => {
                             source: 'cloudinary',
                             uploadedAt: new Date()
                         })
-                            .then((res) => console.log("Media metadata saved with ID:", res.id))
+                            .then((res) => {
+                                console.log("Media metadata saved with ID:", res.id);
+                                fetchData(); // Refresh media library
+                            })
                             .catch(err => {
                                 console.error("CRITICAL: Background metadata save failed:", err);
                                 if (err.message && err.message.includes('permission-denied')) {
@@ -228,28 +237,14 @@ export const BlogProvider = ({ children }) => {
         });
     };
 
-    // Media state and subscription
+    // Media state separate from posts (handled in fetchData now used by both)
     const [media, setMedia] = useState([]);
-    useEffect(() => {
-        console.log("BlogContext: Subscribing to media...");
-        const q = query(collection(db, 'media'), orderBy('uploadedAt', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log(`BlogContext: Media update received (${snapshot.docs.length} items)`);
-            setMedia(snapshot.docs.map(d => ({
-                id: d.id,
-                ...d.data(),
-                uploadedAt: d.data().uploadedAt?.toDate().toISOString() || new Date().toISOString()
-            })));
-        }, (error) => {
-            console.error("BlogContext: Media Subscription Error:", error);
-        });
-        return () => unsubscribe();
-    }, []);
 
     const deleteMedia = async (mediaItem) => {
         try {
             // Delete from Firestore via REST
             await restDeleteDoc('media', mediaItem.id);
+            fetchData(); // Refresh list
             // Delete from Storage
             if (mediaItem.path) {
                 const storageRef = ref(storage, mediaItem.path);

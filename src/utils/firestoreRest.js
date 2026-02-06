@@ -1,5 +1,27 @@
 import { auth } from '../firebase';
 
+// Helper to convert Firestore JSON value to JS
+const fromFirestoreValue = (value) => {
+    if (value.nullValue !== undefined) return null;
+    if (value.booleanValue !== undefined) return value.booleanValue;
+    if (value.integerValue !== undefined) return parseInt(value.integerValue, 10);
+    if (value.doubleValue !== undefined) return parseFloat(value.doubleValue);
+    if (value.timestampValue !== undefined) return new Date(value.timestampValue);
+    if (value.stringValue !== undefined) return value.stringValue;
+    if (value.arrayValue !== undefined) {
+        return (value.arrayValue.values || []).map(fromFirestoreValue);
+    }
+    if (value.mapValue !== undefined) {
+        const fields = value.mapValue.fields || {};
+        const obj = {};
+        for (const k in fields) {
+            obj[k] = fromFirestoreValue(fields[k]);
+        }
+        return obj;
+    }
+    return undefined;
+};
+
 // Helper to convert JS Object into Firestore JSON format
 const toFirestoreValue = (value) => {
     if (value === null || value === undefined) return { nullValue: null };
@@ -11,7 +33,9 @@ const toFirestoreValue = (value) => {
     if (value instanceof Date) return { timestampValue: value.toISOString() };
     if (typeof value === 'string') return { stringValue: value };
     if (Array.isArray(value)) {
-        return { arrayValue: { values: value.map(toFirestoreValue) } };
+        // Filter out undefineds to avoid errors
+        const validValues = value.map(toFirestoreValue).filter(v => v !== undefined);
+        return { arrayValue: { values: validValues } };
     }
     if (typeof value === 'object') {
         // Check for special valid objects if needed, else assumes map
@@ -124,6 +148,49 @@ export const restDeleteDoc = async (collectionName, docId) => {
         return true;
     } catch (error) {
         console.error("REST Delete Error:", error);
+        throw error;
+    }
+};
+
+// Generic REST Get All (List)
+export const restGetDocs = async (collectionName) => {
+    try {
+        const token = await auth.currentUser.getIdToken();
+        const url = `${getBaseUrl()}/${collectionName}?pageSize=100`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`REST List Failed: ${response.status} - ${errText}`);
+        }
+
+        const data = await response.json();
+
+        // Convert response documents to friendly JS objects
+        return (data.documents || []).map(doc => {
+            const docId = doc.name.split('/').pop();
+            const fields = doc.fields || {};
+            const obj = { id: docId };
+
+            for (const key in fields) {
+                obj[key] = fromFirestoreValue(fields[key]);
+            }
+
+            // Ensure timestamps exist (REST API might return createTime/updateTime at root)
+            if (!obj.createdAt && doc.createTime) obj.createdAt = new Date(doc.createTime);
+            if (!obj.updatedAt && doc.updateTime) obj.updatedAt = new Date(doc.updateTime);
+
+            return obj;
+        });
+
+    } catch (error) {
+        console.error("REST List Error:", error);
         throw error;
     }
 };
