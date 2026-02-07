@@ -87,8 +87,8 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
     return (
         <div
             className={`sticky z-30 transition-all duration-300
-                ${detached ? 'top-20 mx-3 mt-2 rounded-xl border border-blue-500/20 bg-[var(--bg-secondary)]/95 backdrop-blur-xl shadow-[0_14px_40px_-18px_rgba(59,130,246,0.55)]'
-                    : 'top-0 rounded-t-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]'}
+                ${detached ? 'top-[4.5rem] mx-3 mt-2 rounded-xl border border-blue-500/20 bg-[var(--bg-secondary)]/95 backdrop-blur-xl shadow-[0_14px_40px_-18px_rgba(59,130,246,0.55)]'
+                    : 'top-[4.5rem] rounded-t-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]'}
             `}
         >
             <div className="flex flex-wrap items-center gap-1 p-2 relative">

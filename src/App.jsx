@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BlogProvider } from './contexts/BlogContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -27,8 +27,14 @@ import Feedback from './pages/Feedback';
 import DeleteAccount from './pages/DeleteAccount';
 import { ToastProvider } from './contexts/ToastContext';
 
-const App = () => {
+const SmoothScrollManager = () => {
+    const location = useLocation();
+
     useEffect(() => {
+        if (location.pathname.startsWith('/admin')) {
+            return undefined;
+        }
+
         const lenis = new Lenis(/** @type {any} */({
             duration: 0.8,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -53,8 +59,12 @@ const App = () => {
             cancelAnimationFrame(rafId);
             lenis.destroy();
         };
-    }, []);
+    }, [location.pathname]);
 
+    return null;
+};
+
+const App = () => {
     return (
         <HelmetProvider>
             <AuthProvider>
@@ -62,6 +72,7 @@ const App = () => {
                     <ThemeProvider>
                         <ToastProvider>
                         <Router>
+                            <SmoothScrollManager />
                             <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col font-sans text-[var(--text-primary)] transition-colors duration-300">
                                 <BackgroundEffects />
 

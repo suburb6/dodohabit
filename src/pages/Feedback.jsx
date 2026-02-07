@@ -155,23 +155,40 @@ const Feedback = () => {
                         </p>
                     </div>
 
-                    {done && (
-                        <div className="mb-5 rounded-xl border border-green-500/30 bg-green-500/10 text-green-400 px-4 py-3 text-sm">
-                            Feedback sent successfully. Thank you.
+                    {done ? (
+                        <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-6 md:p-8 text-center space-y-4">
+                            <h2 className="text-2xl md:text-3xl font-extrabold text-green-400">Feedback Sent</h2>
+                            <p className="text-[var(--text-primary)] font-medium">
+                                Thank you for writing to us.
+                            </p>
+                            <p className="text-[var(--text-secondary)]">
+                                We usually respond within 24 hours. Stay tuned.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDone(false);
+                                    setErrors({});
+                                }}
+                                className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 transition-colors"
+                            >
+                                Send Another Feedback
+                            </button>
                         </div>
-                    )}
-
+                    ) : (
                     <form onSubmit={onSubmit} className="space-y-4">
                         <div>
                             <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] flex items-center gap-2 mb-1.5">
                                 <User size={14} />
                                 Name
+                                <span className="text-red-400">*</span>
                             </label>
                             <input
                                 value={form.name}
                                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                                 className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                                 placeholder="Your name"
+                                required
                             />
                             {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                         </div>
@@ -180,6 +197,7 @@ const Feedback = () => {
                             <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] flex items-center gap-2 mb-1.5">
                                 <Mail size={14} />
                                 Email
+                                <span className="text-red-400">*</span>
                             </label>
                             <input
                                 value={form.email}
@@ -187,6 +205,7 @@ const Feedback = () => {
                                 className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                                 placeholder="you@example.com"
                                 type="email"
+                                required
                             />
                             {form.email && !emailLooksValid && (
                                 <p className="text-yellow-400 text-xs mt-1">Email format looks invalid.</p>
@@ -198,12 +217,14 @@ const Feedback = () => {
                             <label className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] flex items-center gap-2 mb-1.5">
                                 <MessageSquareHeart size={14} />
                                 Message
+                                <span className="text-red-400">*</span>
                             </label>
                             <textarea
                                 value={form.message}
                                 onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
                                 className="w-full min-h-[160px] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors resize-y"
                                 placeholder="Tell us what is working, what is not, and what should be improved."
+                                required
                             />
                             {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
                         </div>
@@ -231,6 +252,7 @@ const Feedback = () => {
                             {submitting ? 'Sending...' : 'Send Feedback'}
                         </button>
                     </form>
+                    )}
                 </motion.div>
             </main>
         </div>

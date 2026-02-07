@@ -13,6 +13,7 @@ const Blog = () => {
     const featuredPost = posts[0];
     const recentPosts = posts.slice(1);
     const featuredStats = featuredPost ? readingTime(featuredPost.content || '') : null;
+    const featuredLatestDate = featuredPost?.updatedAt || featuredPost?.publishedAt || featuredPost?.createdAt;
 
     if (loading) {
         return (
@@ -90,7 +91,7 @@ const Blog = () => {
                             <div className="flex items-center gap-2 text-sm text-blue-500 font-bold uppercase tracking-wider">
                                 <span>Latest Update</span>
                                 <span className="w-1 h-1 rounded-full bg-blue-500"></span>
-                                <span>{formatBlogDate(featuredPost.publishedAt || featuredPost.createdAt)}</span>
+                                <span>{formatBlogDate(featuredLatestDate)}</span>
                             </div>
                             <h3 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] leading-tight hover:text-blue-500 transition-colors cursor-pointer">
                                 <a href={`/blog/${featuredPost.slug}`}>{featuredPost.title}</a>

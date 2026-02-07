@@ -83,20 +83,25 @@ const RichTextEditor = ({
     useEffect(() => {
         if (!toolbarSentinelRef.current) return undefined;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const [entry] = entries;
-                setToolbarDetached(!entry.isIntersecting);
-            },
-            {
-                root: null,
-                threshold: 1,
-                rootMargin: '-80px 0px 0px 0px',
-            }
-        );
+        const sentinel = toolbarSentinelRef.current;
+        const scrollRoot = sentinel.closest('[data-admin-scroll-root]');
+        const target = scrollRoot || window;
 
-        observer.observe(toolbarSentinelRef.current);
-        return () => observer.disconnect();
+        const syncDetachedState = () => {
+            const sentinelTop = sentinel.getBoundingClientRect().top;
+            const rootTop = scrollRoot ? scrollRoot.getBoundingClientRect().top : 0;
+            const stickyThreshold = rootTop + 78;
+            setToolbarDetached(sentinelTop < stickyThreshold);
+        };
+
+        syncDetachedState();
+        target.addEventListener('scroll', syncDetachedState, { passive: true });
+        window.addEventListener('resize', syncDetachedState);
+
+        return () => {
+            target.removeEventListener('scroll', syncDetachedState);
+            window.removeEventListener('resize', syncDetachedState);
+        };
     }, []);
 
     useEffect(() => {

@@ -573,11 +573,12 @@ const PostEditor = () => {
                     </div>
 
                     {/* Sidebar Settings */}
-                    <div className="space-y-4">
-                        <div
-                            data-lenis-prevent
-                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft sticky top-20 h-[calc(100vh-6rem)] overflow-y-auto thin-scrollbar"
-                        >
+                    <div className="space-y-4 xl:col-span-1">
+                        <div className="sticky top-20 z-20">
+                            <div
+                                data-lenis-prevent
+                                className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft max-h-[calc(100vh-6.25rem)] overflow-y-auto thin-scrollbar"
+                            >
                             <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
                                 Post Settings
                             </h3>
@@ -586,7 +587,7 @@ const PostEditor = () => {
                                 <div>
                                     <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Author</label>
                                     <div className="flex items-center gap-2">
-                                        <div className="relative" ref={authorPhotoMenuRef}>
+                                        <div className="relative z-20" ref={authorPhotoMenuRef}>
                                             <button
                                                 type="button"
                                                 onClick={() => setAuthorPhotoMenuOpen((v) => !v)}
@@ -605,6 +606,8 @@ const PostEditor = () => {
                                                 onClose={() => setAuthorPhotoMenuOpen(false)}
                                                 onUploadFromComputer={() => authorPhotoInputRef.current?.click()}
                                                 onOpenLibrary={() => setAuthorPhotoLibraryOpen(true)}
+                                                anchorRef={authorPhotoMenuRef}
+                                                portal
                                             />
 
                                             <input
@@ -771,6 +774,7 @@ const PostEditor = () => {
                                     </div >
                                 )}
                             </div >
+                            </div>
                         </div >
                     </div >
                 </div >

@@ -117,7 +117,7 @@ const AdminLayout = () => {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1" data-admin-scroll-root>
                     <Outlet />
                 </main>
             </div>

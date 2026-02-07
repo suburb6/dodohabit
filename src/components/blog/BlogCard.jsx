@@ -6,6 +6,7 @@ import { formatBlogDate } from '../../utils/dateFormat';
 
 const BlogCard = ({ post }) => {
     const stats = readingTime(post.content);
+    const latestDate = post.updatedAt || post.publishedAt || post.createdAt;
 
     return (
         <article className="group relative flex flex-col items-start justify-between h-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 transition-all duration-300 hover:border-blue-500/50 hover:bg-[var(--bg-primary)] hover:-translate-y-1">
@@ -40,7 +41,7 @@ const BlogCard = ({ post }) => {
                 <div className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)] mb-3 uppercase tracking-wider">
                     <span className="text-blue-500 font-bold">Blog</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]"></span>
-                    <span>{formatBlogDate(post.publishedAt || post.createdAt)}</span>
+                    <span>{formatBlogDate(latestDate)}</span>
                 </div>
 
                 <h3 className="mt-2 text-xl font-bold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors line-clamp-2">

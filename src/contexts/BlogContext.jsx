@@ -20,6 +20,12 @@ const BlogContext = createContext(null);
 
 export const useBlog = () => useContext(BlogContext);
 
+const getPostTimelineMs = (post) => {
+    const source = post?.updatedAt || post?.publishedAt || post?.createdAt;
+    const time = source ? new Date(source).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+};
+
 export const BlogProvider = ({ children }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -204,7 +210,8 @@ export const BlogProvider = ({ children }) => {
 
     const getPublishedPosts = () => {
         return posts
-            .filter(post => post.status === 'published');
+            .filter(post => post.status === 'published')
+            .sort((a, b) => getPostTimelineMs(b) - getPostTimelineMs(a));
     };
 
     // --- CLOUDINARY UPLOAD IMPLEMENTATION ---
