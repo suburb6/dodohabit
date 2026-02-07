@@ -5,6 +5,10 @@ import { useBlog } from '../../contexts/BlogContext';
 const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
     const { media, deleteMedia, loading } = useBlog();
     const [selectedId, setSelectedId] = React.useState(null);
+    const getDisplayTitle = React.useCallback(
+        (item) => (item?.title || item?.originalName || item?.filename || 'Untitled image').replace(/\.[^/.]+$/, ''),
+        []
+    );
 
     // Reset selection when modal opens/closes
     React.useEffect(() => {
@@ -85,10 +89,15 @@ const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
                                 >
                                     <img
                                         src={item.url}
-                                        alt={item.originalName || 'Library image'}
+                                        alt={item.title || item.originalName || 'Library image'}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         loading="lazy"
                                     />
+                                    <div className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-2 py-1.5">
+                                        <p className="text-[10px] text-white font-semibold truncate">
+                                            {getDisplayTitle(item)}
+                                        </p>
+                                    </div>
                                     {/* Delete Button */}
                                     <button
                                         onClick={(e) => handleDelete(e, item)}

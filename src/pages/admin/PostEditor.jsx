@@ -574,11 +574,7 @@ const PostEditor = () => {
 
                     {/* Sidebar Settings */}
                     <div className="space-y-4 xl:col-span-1">
-                        <div className="sticky top-20 z-20">
-                            <div
-                                data-lenis-prevent
-                                className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft max-h-[calc(100vh-6.25rem)] overflow-y-auto thin-scrollbar"
-                            >
+                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft">
                             <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
                                 Post Settings
                             </h3>
@@ -678,10 +674,13 @@ const PostEditor = () => {
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            {/* TOC Management */}
-                            <hr className="border-[var(--border-color)]" />
-                            <div>
+                        <div className="sticky top-20 z-20">
+                            <div
+                                data-lenis-prevent
+                                className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft max-h-[calc(100vh-6.25rem)] overflow-y-auto thin-scrollbar"
+                            >
                                 <button
                                     type="button"
                                     onClick={() => setTocOpen((v) => !v)}
@@ -703,7 +702,7 @@ const PostEditor = () => {
                                 </button>
 
                                 {tocOpen && (
-                                    <div className="mt-3 space-y-2">
+                                    <div className="mt-1 space-y-2">
                                         {tocEntries.items.length > 0 && tocEntries.items.map((item) => {
                                             const isHeading = item.type === 'heading';
                                             const isHidden = isHeading && tocHiddenArr.some((t) => normalizeLabel(t) === normalizeLabel(item.text));
@@ -771,12 +770,11 @@ const PostEditor = () => {
                                         {tocEntries.items.length === 0 && (
                                             <p className="text-xs text-[var(--text-secondary)] italic">No TOC entries yet. Add headings or use the cursor TOC action in editor.</p>
                                         )}
-                                    </div >
+                                    </div>
                                 )}
-                            </div >
                             </div>
-                        </div >
-                    </div >
+                        </div>
+                    </div>
                 </div >
             </div >
 

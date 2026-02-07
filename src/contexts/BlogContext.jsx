@@ -26,6 +26,11 @@ const getPostTimelineMs = (post) => {
     return Number.isFinite(time) ? time : 0;
 };
 
+const getDefaultMediaTitle = (filename) => {
+    const base = (filename || '').replace(/\.[^/.]+$/, '').trim();
+    return base || 'Untitled image';
+};
+
 export const BlogProvider = ({ children }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -257,6 +262,7 @@ export const BlogProvider = ({ children }) => {
                         restAddDoc('media', {
                             url: downloadURL,
                             path: response.public_id,
+                            title: getDefaultMediaTitle(file.name),
                             filename: file.name,
                             originalName: file.name,
                             type: file.type,
@@ -303,6 +309,16 @@ export const BlogProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Error deleting media:", error);
+            throw error;
+        }
+    };
+
+    const updateMedia = async (id, updates) => {
+        try {
+            await restUpdateDoc('media', id, { ...updates, updatedAt: new Date() });
+            fetchData();
+        } catch (error) {
+            console.error("Error updating media:", error);
             throw error;
         }
     };
@@ -412,6 +428,7 @@ export const BlogProvider = ({ children }) => {
             uploadImage,
             media,
             deleteMedia,
+            updateMedia,
             feedback,
             submitFeedback,
             updateFeedback,

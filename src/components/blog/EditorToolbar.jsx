@@ -219,29 +219,28 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
             >
                 <LinkIcon size={18} />
             </ToolbarButton>
-            <ToolbarButton
-                onClick={() => setImageMenuOpen((v) => !v)}
-                isActive={imageMenuOpen}
-                title="Add Image"
-            >
-                <ImageIcon size={18} />
-            </ToolbarButton>
+            <div ref={imageMenuRef} className="relative">
+                <ToolbarButton
+                    onClick={() => setImageMenuOpen((v) => !v)}
+                    isActive={imageMenuOpen}
+                    title="Add Image"
+                >
+                    <ImageIcon size={18} />
+                </ToolbarButton>
+                <ImageSourceMenu
+                    open={imageMenuOpen}
+                    onClose={() => setImageMenuOpen(false)}
+                    onUploadFromComputer={addImageFromComputer}
+                    onOpenLibrary={openImageLibrary}
+                    className="left-1/2 right-auto -translate-x-1/2 mt-1"
+                />
+            </div>
             <ToolbarButton
                 onClick={addTocAtCursor}
                 title="Add TOC marker at cursor"
             >
                 TOC
             </ToolbarButton>
-
-            <div ref={imageMenuRef} className="relative ml-1">
-                <ImageSourceMenu
-                    open={imageMenuOpen}
-                    onClose={() => setImageMenuOpen(false)}
-                    onUploadFromComputer={addImageFromComputer}
-                    onOpenLibrary={openImageLibrary}
-                    className="right-auto left-0"
-                />
-            </div>
             </div>
         </div>
     );
