@@ -147,3 +147,36 @@
 .prose .toc-anchor-marker::before {
     content: '';
 }
+
+.prose .content-image-frame {
+    position: relative;
+    margin: 1.5rem 0;
+}
+
+.prose .content-image-frame img {
+    width: 100%;
+    border-radius: 0.85rem;
+}
+
+.prose .content-image-badges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.prose .content-image-badge {
+    position: absolute;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+}

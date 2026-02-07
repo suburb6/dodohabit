@@ -53,17 +53,20 @@ const getBaseUrl = () => {
     return `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents`;
 };
 
+const toFirestoreFields = (data) => {
+    const fields = {};
+    for (const key in data) {
+        fields[key] = toFirestoreValue(data[key]);
+    }
+    return fields;
+};
+
 // Generic REST Add (Create)
 export const restAddDoc = async (collectionName, data) => {
     try {
         const token = await auth.currentUser.getIdToken();
         const url = `${getBaseUrl()}/${collectionName}`;
-
-        // Convert flat data object to Firestore "fields" format
-        const fields = {};
-        for (const key in data) {
-            fields[key] = toFirestoreValue(data[key]);
-        }
+        const fields = toFirestoreFields(data);
 
         const response = await fetch(url, {
             method: 'POST',
@@ -85,6 +88,33 @@ export const restAddDoc = async (collectionName, data) => {
         return { id: docId, ...data };
     } catch (error) {
         console.error("REST Add Error:", error);
+        throw error;
+    }
+};
+
+export const restAddDocPublic = async (collectionName, data) => {
+    try {
+        const url = `${getBaseUrl()}/${collectionName}`;
+        const fields = toFirestoreFields(data);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fields })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`REST Public Add Failed: ${response.status} - ${errText}`);
+        }
+
+        const resData = await response.json();
+        const docId = resData.name.split('/').pop();
+        return { id: docId, ...data };
+    } catch (error) {
+        console.error("REST Public Add Error:", error);
         throw error;
     }
 };

@@ -31,7 +31,8 @@ const BlogPreview = () => {
                 featuredImage: null,
                 authorName: '',
                 authorTitle: '',
-                authorImage: null
+                authorImage: null,
+                featuredBadges: []
             });
             return;
         }
@@ -47,7 +48,8 @@ const BlogPreview = () => {
                 featuredImage: null,
                 authorName: '',
                 authorTitle: '',
-                authorImage: null
+                authorImage: null,
+                featuredBadges: []
             });
         }
     }, []);
@@ -61,6 +63,10 @@ const BlogPreview = () => {
             const div = document.createElement('div');
             div.innerHTML = contentForPreview;
             const hidden = new Set((Array.isArray(post.tocHidden) ? post.tocHidden : []).map(normalizeLabel));
+            const imageBadges = (Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
+                .map((badge) => (badge || '').trim())
+                .filter(Boolean)
+                .slice(0, 2);
 
             const items = [];
             const customLabels = new Set();
@@ -92,6 +98,28 @@ const BlogPreview = () => {
 
                 items.push({ id, text, level: isAnchor ? 'sub' : el.tagName.toLowerCase() });
             });
+
+            if (imageBadges.length > 0) {
+                div.querySelectorAll('img').forEach((img) => {
+                    if (!(img instanceof HTMLImageElement)) return;
+                    if (img.closest('.content-image-frame')) return;
+                    const frame = document.createElement('figure');
+                    frame.className = 'content-image-frame';
+                    img.replaceWith(frame);
+                    frame.appendChild(img);
+
+                    const badges = document.createElement('div');
+                    badges.className = 'content-image-badges';
+                    imageBadges.forEach((badge, badgeIndex) => {
+                        const badgeEl = document.createElement('span');
+                        badgeEl.className = 'content-image-badge';
+                        badgeEl.style.top = `${12 + badgeIndex * 34}px`;
+                        badgeEl.textContent = badge;
+                        badges.appendChild(badgeEl);
+                    });
+                    frame.appendChild(badges);
+                });
+            }
 
             setToc(items);
             setProcessedContent(div.innerHTML);
@@ -177,8 +205,19 @@ const BlogPreview = () => {
 
             {post.featuredImage && (
                 <div className="max-w-6xl mx-auto px-4 md:px-8 mb-16">
-                    <div className="aspect-[21/9] rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)]">
+                    <div className="aspect-[21/9] rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)] relative">
                         <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover" />
+                        {(Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((badge) => (
+                                <span
+                                    key={badge}
+                                    className="absolute top-4 left-4 first:top-4 last:top-12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-md"
+                                >
+                                    {badge}
+                                </span>
+                            ))}
                     </div>
                 </div>
             )}

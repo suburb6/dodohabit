@@ -9,6 +9,7 @@ import {
     Menu,
     X,
     Settings,
+    MessageSquare,
     Moon,
     Sun
 } from 'lucide-react';
@@ -75,6 +76,7 @@ const AdminLayout = () => {
                     <NavItem to="/admin/posts" label="All Posts" icon={FileText} />
                     <NavItem to="/admin/posts/new" label="New Post" icon={PenSquare} />
                     <NavItem to="/admin/media" label="Media Library" icon={Settings} />
+                    <NavItem to="/admin/feedback" label="Feedback" icon={MessageSquare} />
                 </nav>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border-color)] flex flex-col gap-2 bg-[var(--bg-secondary)]">

@@ -14,6 +14,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import PostsList from './pages/admin/PostsList';
 import PostEditor from './pages/admin/PostEditor';
 import MediaLibrary from './pages/admin/MediaLibrary';
+import FeedbackList from './pages/admin/FeedbackList';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
 import Home from './pages/Home';
@@ -75,6 +76,7 @@ const App = () => {
                                             <Route path="posts/new" element={<PostEditor />} />
                                             <Route path="posts/:id/edit" element={<PostEditor />} />
                                             <Route path="media" element={<MediaLibrary />} />
+                                            <Route path="feedback" element={<FeedbackList />} />
                                         </Route>
                                     </Route>
 

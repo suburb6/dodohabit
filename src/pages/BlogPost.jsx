@@ -30,6 +30,10 @@ const BlogPost = () => {
             // Create a temporary DOM element to parse HTML
             const div = document.createElement('div');
             div.innerHTML = post.content;
+            const imageBadges = (Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
+                .map((badge) => (badge || '').trim())
+                .filter(Boolean)
+                .slice(0, 2);
 
             const hidden = new Set((Array.isArray(post.tocHidden) ? post.tocHidden : []).map(normalizeLabel));
             const items = [];
@@ -70,6 +74,28 @@ const BlogPost = () => {
                     level: isAnchor ? 'sub' : el.tagName.toLowerCase(),
                 });
             });
+
+            if (imageBadges.length > 0) {
+                div.querySelectorAll('img').forEach((img, imageIndex) => {
+                    if (!(img instanceof HTMLImageElement)) return;
+                    if (img.closest('.content-image-frame')) return;
+                    const frame = document.createElement('figure');
+                    frame.className = 'content-image-frame';
+                    img.replaceWith(frame);
+                    frame.appendChild(img);
+
+                    const badges = document.createElement('div');
+                    badges.className = 'content-image-badges';
+                    imageBadges.forEach((badge, badgeIndex) => {
+                        const badgeEl = document.createElement('span');
+                        badgeEl.className = 'content-image-badge';
+                        badgeEl.style.top = `${12 + badgeIndex * 34}px`;
+                        badgeEl.textContent = badge;
+                        badges.appendChild(badgeEl);
+                    });
+                    frame.appendChild(badges);
+                });
+            }
 
             setToc(items);
             setProcessedContent(div.innerHTML);
@@ -181,12 +207,23 @@ const BlogPost = () => {
             {post.featuredImage && (
                 <div className="max-w-6xl mx-auto px-4 md:px-8 mb-16">
                     <div className="rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)]">
-                        <div className="aspect-[21/9]">
+                        <div className="aspect-[21/9] relative">
                             <img
                                 src={post.featuredImage}
                                 alt={post.featuredImageAlt || post.title}
                                 className="w-full h-full object-cover"
                             />
+                            {(Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
+                                .filter(Boolean)
+                                .slice(0, 2)
+                                .map((badge) => (
+                                    <span
+                                        key={badge}
+                                        className="absolute top-4 left-4 first:top-4 last:top-12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-md"
+                                    >
+                                        {badge}
+                                    </span>
+                                ))}
                         </div>
                         {(post.featuredImageCaption || post.featuredImageCredit) && (
                             <div className="px-6 py-3 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] flex flex-wrap justify-between items-center gap-4 text-xs md:text-sm text-[var(--text-secondary)]">

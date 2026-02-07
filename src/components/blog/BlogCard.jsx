@@ -11,11 +11,24 @@ const BlogCard = ({ post }) => {
         <article className="group relative flex flex-col items-start justify-between h-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 transition-all duration-300 hover:border-blue-500/50 hover:bg-[var(--bg-primary)] hover:-translate-y-1">
             <div className="w-full aspect-[16/9] mb-6 overflow-hidden rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
                 {post.featuredImage ? (
-                    <img
-                        src={post.featuredImage}
-                        alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    <div className="relative w-full h-full">
+                        <img
+                            src={post.featuredImage}
+                            alt={post.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        {(Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((badge) => (
+                                <span
+                                    key={badge}
+                                    className="absolute top-2 left-2 first:top-2 last:top-9 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-md"
+                                >
+                                    {badge}
+                                </span>
+                            ))}
+                    </div>
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] opacity-40">
                         <span className="font-bold text-2xl">No Image</span>

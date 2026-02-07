@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trash2, Check, RefreshCw } from 'lucide-react';
+import { X, Trash2, RefreshCw } from 'lucide-react';
 import { useBlog } from '../../contexts/BlogContext';
 
 const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
@@ -36,7 +36,7 @@ const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
                     <div className="flex items-center gap-4">
@@ -57,7 +57,7 @@ const MediaLibraryModal = ({ isOpen, onClose, onSelect }) => {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar min-h-[300px]">
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar thin-scrollbar min-h-[300px]" data-lenis-prevent>
                     {media.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-[var(--text-secondary)]">
                             <div className="w-16 h-16 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mb-4">

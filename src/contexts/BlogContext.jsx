@@ -14,7 +14,7 @@ import {
 import { ref, deleteObject } from 'firebase/storage';
 import { storage, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { restAddDoc, restUpdateDoc, restDeleteDoc, restGetDocs } from '../utils/firestoreRest';
+import { restAddDoc, restAddDocPublic, restUpdateDoc, restDeleteDoc, restGetDocs } from '../utils/firestoreRest';
 
 const BlogContext = createContext(null);
 
@@ -25,6 +25,7 @@ export const BlogProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [media, setMedia] = useState([]);
+    const [feedback, setFeedback] = useState([]);
 
     // Track auth state
     useEffect(() => {
@@ -45,21 +46,34 @@ export const BlogProvider = ({ children }) => {
         console.log("BlogContext: Fetching data via REST...");
 
         try {
-            // Fetch Posts
             const postsData = await restGetDocs('posts');
-            // Sort manually (REST sort is complex)
             postsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             setPosts(postsData);
             console.log(`BlogContext: Fetched ${postsData.length} posts`);
+        } catch (error) {
+            console.error("BlogContext: Error fetching posts:", error);
+        }
 
-            // Fetch Media
+        try {
             const mediaData = await restGetDocs('media');
             mediaData.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
             setMedia(mediaData);
             console.log(`BlogContext: Fetched ${mediaData.length} media items`);
-
         } catch (error) {
-            console.error("BlogContext: Error fetching data:", error);
+            console.error("BlogContext: Error fetching media:", error);
+        }
+
+        try {
+            if (!user) {
+                setFeedback([]);
+            } else {
+                const feedbackData = await restGetDocs('feedback');
+                feedbackData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                setFeedback(feedbackData);
+                console.log(`BlogContext: Fetched ${feedbackData.length} feedback items`);
+            }
+        } catch (error) {
+            console.error("BlogContext: Error fetching feedback:", error);
         } finally {
             setLoading(false);
         }
@@ -148,6 +162,33 @@ export const BlogProvider = ({ children }) => {
             fetchData(); // Refresh list
         } catch (error) {
             console.error("Error deleting post:", error);
+            throw error;
+        }
+    };
+
+    const submitFeedback = async (feedbackData) => {
+        try {
+            const payload = {
+                ...feedbackData,
+                status: feedbackData.status || 'new',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            const created = await restAddDocPublic('feedback', payload);
+            if (user) fetchData();
+            return created?.id;
+        } catch (error) {
+            console.error("Error submitting feedback:", error);
+            throw error;
+        }
+    };
+
+    const updateFeedback = async (id, updates) => {
+        try {
+            await restUpdateDoc('feedback', id, { ...updates, updatedAt: new Date() });
+            fetchData();
+        } catch (error) {
+            console.error("Error updating feedback:", error);
             throw error;
         }
     };
@@ -364,6 +405,9 @@ export const BlogProvider = ({ children }) => {
             uploadImage,
             media,
             deleteMedia,
+            feedback,
+            submitFeedback,
+            updateFeedback,
             loading,
             testFirestore
         }}>

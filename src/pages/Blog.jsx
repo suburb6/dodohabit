@@ -5,6 +5,7 @@ import SEO from '../components/SEO';
 import { motion } from 'framer-motion';
 import { readingTime } from 'reading-time-estimator';
 import { formatBlogDate } from '../utils/dateFormat';
+import { Play, Smartphone } from 'lucide-react';
 
 const Blog = () => {
     const { getPublishedPosts, loading } = useBlog();
@@ -36,22 +37,18 @@ const Blog = () => {
                 title="Blog"
                 description="Insights on habit building, productivity, and health tracking. Learn how to transform your daily routine with DodoHabit."
             />
-            <div className="text-center mb-16 space-y-4">
+            <div className="text-center mb-16">
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-5xl md:text-7xl font-extrabold tracking-tight text-[var(--text-primary)] mb-6"
+                    className="inline-flex flex-col items-center gap-4"
                 >
-                    The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400">Dodo Blog</span>
+                    <span className="text-xs uppercase tracking-[0.25em] text-blue-400 font-bold">Editorial Journal</span>
+                    <span className="text-5xl md:text-7xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                        The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400">Dodo Blog</span>
+                    </span>
+                    <span className="h-1.5 w-28 rounded-full bg-gradient-to-r from-blue-500/0 via-blue-500 to-cyan-400/0" />
                 </motion.h1>
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto"
-                >
-                    Insights on habit building, productivity, and health tracking.
-                </motion.p>
             </div>
 
             {featuredPost && (
@@ -62,14 +59,27 @@ const Blog = () => {
                     className="mb-24"
                 >
                     <h2 className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-6 border-l-4 border-blue-500 pl-4">Featured Article</h2>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                        <div className="aspect-[16/9] lg:aspect-auto lg:h-[400px] rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+                        <div className="aspect-[16/9] lg:aspect-auto lg:min-h-[360px] lg:h-full rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl">
                             {featuredPost.featuredImage ? (
-                                <img
-                                    src={featuredPost.featuredImage}
-                                    alt={featuredPost.title}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                                />
+                                <div className="relative w-full h-full">
+                                    <img
+                                        src={featuredPost.featuredImage}
+                                        alt={featuredPost.title}
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                                    />
+                                    {(Array.isArray(featuredPost.featuredBadges) ? featuredPost.featuredBadges : [])
+                                        .filter(Boolean)
+                                        .slice(0, 2)
+                                        .map((badge) => (
+                                            <span
+                                                key={badge}
+                                                className="absolute top-4 left-4 first:top-4 last:top-12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-md"
+                                            >
+                                                {badge}
+                                            </span>
+                                        ))}
+                                </div>
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-600 font-bold text-xl">
                                     No Image
@@ -125,23 +135,28 @@ const Blog = () => {
                 </div>
             )}
 
-            {/* Newsletter CTA */}
-            <div className="mt-24 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-3xl p-8 md:p-12 border border-blue-500/20 text-center relative overflow-hidden">
+            <div className="mt-24 bg-gradient-to-r from-blue-900/20 via-blue-800/10 to-cyan-900/20 rounded-3xl p-8 md:p-12 border border-blue-500/20 text-center relative overflow-hidden">
                 <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-                    <h3 className="text-3xl font-bold text-[var(--text-primary)]">Subscribe to our newsletter</h3>
-                    <p className="text-[var(--text-secondary)]">Get the latest posts and updates delivered straight to your inbox.</p>
-                    <form className="flex flex-col sm:flex-row gap-4 justify-center" onSubmit={(e) => e.preventDefault()}>
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] px-6 py-3 rounded-xl focus:outline-none focus:border-blue-500 w-full sm:w-auto flex-1 md:max-w-xs"
-                        />
-                        <button className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors">
-                            Subscribe
+                    <h3 className="text-3xl font-bold text-[var(--text-primary)]">Get DodoHabit On Mobile</h3>
+                    <p className="text-[var(--text-secondary)]">Track habits and read fresh insights from your phone.</p>
+                    <div className="flex flex-wrap items-center justify-center gap-4">
+                        <button className="px-5 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-blue-500 transition-colors flex items-center gap-3">
+                            <Play size={18} className="text-blue-500" />
+                            <span className="text-left">
+                                <span className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Get it on</span>
+                                <span className="block text-sm font-bold">Google Play</span>
+                            </span>
                         </button>
-                    </form>
+                        <button className="px-5 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] hover:border-blue-500 transition-colors flex items-center gap-3">
+                            <Smartphone size={18} className="text-blue-500" />
+                            <span className="text-left">
+                                <span className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Download on</span>
+                                <span className="block text-sm font-bold">App Store</span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
-                <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.02] mask-image-b-0" />
+                <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.02]" />
             </div>
         </div>
     );

@@ -19,14 +19,34 @@ import {
     Redo,
     Link as LinkIcon
 } from 'lucide-react';
+import ImageSourceMenu from './ImageSourceMenu';
 
 /**
- * @param {{ editor: import('@tiptap/react').Editor | null, addImage: () => void }} props
+ * @param {{
+ *   editor: import('@tiptap/react').Editor | null,
+ *   addImageFromComputer: () => void,
+ *   openImageLibrary: () => void,
+ *   detached?: boolean,
+ *   addTocAtCursor?: () => void,
+ * }} props
  */
-const EditorToolbar = ({ editor, addImage }) => {
+const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detached = false, addTocAtCursor }) => {
     if (!editor) {
         return null;
     }
+
+    const [imageMenuOpen, setImageMenuOpen] = React.useState(false);
+    const imageMenuRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (!imageMenuOpen) return;
+        const onMouseDown = (event) => {
+            if (imageMenuRef.current?.contains(event.target)) return;
+            setImageMenuOpen(false);
+        };
+        window.addEventListener('mousedown', onMouseDown);
+        return () => window.removeEventListener('mousedown', onMouseDown);
+    }, [imageMenuOpen]);
 
     const setLink = () => {
         const previousUrl = editor.getAttributes('link').href;
@@ -65,7 +85,13 @@ const EditorToolbar = ({ editor, addImage }) => {
     const Divider = () => <div className="w-[1px] h-6 bg-[var(--border-color)] mx-1" />;
 
     return (
-        <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-t-xl sticky top-0 z-10">
+        <div
+            className={`sticky z-30 transition-all duration-300
+                ${detached ? 'top-20 mx-3 mt-2 rounded-xl border border-blue-500/20 bg-[var(--bg-secondary)]/95 backdrop-blur-xl shadow-[0_14px_40px_-18px_rgba(59,130,246,0.55)]'
+                    : 'top-0 rounded-t-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]'}
+            `}
+        >
+            <div className="flex flex-wrap items-center gap-1 p-2 relative">
             <ToolbarButton
                 onClick={() => editor?.chain().focus().undo().run()}
                 disabled={!editor.can().chain().focus().undo().run()}
@@ -194,11 +220,29 @@ const EditorToolbar = ({ editor, addImage }) => {
                 <LinkIcon size={18} />
             </ToolbarButton>
             <ToolbarButton
-                onClick={addImage}
+                onClick={() => setImageMenuOpen((v) => !v)}
+                isActive={imageMenuOpen}
                 title="Add Image"
             >
                 <ImageIcon size={18} />
             </ToolbarButton>
+            <ToolbarButton
+                onClick={addTocAtCursor}
+                title="Add TOC marker at cursor"
+            >
+                TOC
+            </ToolbarButton>
+
+            <div ref={imageMenuRef} className="relative ml-1">
+                <ImageSourceMenu
+                    open={imageMenuOpen}
+                    onClose={() => setImageMenuOpen(false)}
+                    onUploadFromComputer={addImageFromComputer}
+                    onOpenLibrary={openImageLibrary}
+                    className="right-auto left-0"
+                />
+            </div>
+            </div>
         </div>
     );
 };

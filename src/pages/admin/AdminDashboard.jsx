@@ -2,11 +2,11 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useBlog } from '../../contexts/BlogContext';
 import { useAuth } from '../../contexts/AuthContext'; // Assuming this path for AuthContext
-import { FileText, Eye, Clock, Plus, Database } from 'lucide-react'; // Added Database icon
+import { FileText, Eye, Clock, Plus, Database, MessageSquare } from 'lucide-react'; // Added Database icon
 import AdminHeader from '../../components/admin/AdminHeader';
 
 const AdminDashboard = () => {
-    const { posts, media, testFirestore } = useBlog();
+    const { posts, media, feedback, testFirestore } = useBlog();
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -17,6 +17,7 @@ const AdminDashboard = () => {
     };
     const publishedCount = posts.filter(p => p.status === 'published').length;
     const draftCount = posts.filter(p => p.status === 'draft').length;
+    const feedbackCount = (feedback || []).filter((item) => (item.status || 'new') === 'new').length;
     const totalViews = "--"; // TODO: Implement view tracking
 
     const StatCard = ({ title, value, icon: Icon, color }) => (
@@ -53,7 +54,7 @@ const AdminDashboard = () => {
             <AdminHeader title="Dashboard" actions={headerActions} />
 
             <div className="p-4 md:p-6 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <StatCard
                         title="Published Posts"
                         value={publishedCount}
@@ -71,6 +72,12 @@ const AdminDashboard = () => {
                         value={totalViews}
                         icon={Eye}
                         color="bg-blue-500"
+                    />
+                    <StatCard
+                        title="New Feedback"
+                        value={feedbackCount}
+                        icon={MessageSquare}
+                        color="bg-blue-600"
                     />
                 </div>
 

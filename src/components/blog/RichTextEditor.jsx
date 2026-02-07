@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { X } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, Eraser, Image as ImageIcon, Upload, X } from 'lucide-react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import EditorToolbar from './EditorToolbar';
 import TocAnchor from './tiptap/TocAnchor';
+import EnhancedImage from './tiptap/EnhancedImage';
+import MediaLibraryModal from './MediaLibraryModal';
 import './editor.css'; // We'll create this for custom TipTap styles
 
 const slugifyForId = (value) =>
@@ -30,22 +31,24 @@ const RichTextEditor = ({
     onChange,
     onImageUpload,
     placeholder = 'Start writing your amazing post...',
-    onHideFromToc,
 }) => {
     const [tocMenu, setTocMenu] = useState(null);
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [toolbarDetached, setToolbarDetached] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const toolbarSentinelRef = useRef(null);
 
     const editor = useEditor({
         extensions: [
             StarterKit,
-            // Underline, // Potentially duplicate
+            Underline,
             TocAnchor,
-            Image.configure({
-                inline: true,
+            EnhancedImage.configure({
                 allowBase64: false, // Force uploads to prevent oversized docs
             }),
-            // Link.configure({ // Potentially duplicate
-            //     openOnClick: false,
-            // }),
+            Link.configure({
+                openOnClick: false,
+            }),
             Placeholder.configure({
                 placeholder,
             }),
@@ -77,29 +80,90 @@ const RichTextEditor = ({
 
     const fileInputRef = React.useRef(null);
 
+    useEffect(() => {
+        if (!toolbarSentinelRef.current) return undefined;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const [entry] = entries;
+                setToolbarDetached(!entry.isIntersecting);
+            },
+            {
+                root: null,
+                threshold: 1,
+                rootMargin: '-80px 0px 0px 0px',
+            }
+        );
+
+        observer.observe(toolbarSentinelRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!editor) return undefined;
+
+        const syncImageSelection = () => {
+            if (editor.isActive('image')) {
+                setSelectedImage(editor.getAttributes('image'));
+            } else {
+                setSelectedImage(null);
+            }
+        };
+
+        syncImageSelection();
+        editor.on('selectionUpdate', syncImageSelection);
+        editor.on('update', syncImageSelection);
+        return () => {
+            editor.off('selectionUpdate', syncImageSelection);
+            editor.off('update', syncImageSelection);
+        };
+    }, [editor]);
+
     const handleImageUpload = async (e) => {
         const file = e.target.files?.[0];
         if (file && onImageUpload) {
             const url = await onImageUpload(file);
             if (url) {
-                editor.chain().focus().setImage({ src: url }).run();
+                editor.chain().focus().setImage({ src: url, width: '100%', align: 'center' }).run();
             }
         }
         // Reset input
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const addImage = useCallback(() => {
+    const addImageFromComputer = useCallback(() => {
         if (onImageUpload && fileInputRef.current) {
             fileInputRef.current.click();
         } else {
             // Fallback to URL prompt if no upload handler
             const url = window.prompt('URL');
             if (url) {
-                editor.chain().focus().setImage({ src: url }).run();
+                editor.chain().focus().setImage({ src: url, width: '100%', align: 'center' }).run();
             }
         }
     }, [editor, onImageUpload]);
+
+    const openImageLibrary = useCallback(() => {
+        setIsLibraryOpen(true);
+    }, []);
+
+    const onLibraryImageSelect = useCallback((mediaItem) => {
+        if (!mediaItem?.url || !editor) return;
+        editor.chain().focus().setImage({ src: mediaItem.url, width: '100%', align: 'center' }).run();
+    }, [editor]);
+
+    const addTocAtCursor = useCallback(() => {
+        if (!editor) return;
+        const parentText = editor.state.selection.$from.parent?.textContent || '';
+        const suggested = getAutoTocLabel(parentText, 8) || 'Section';
+        const value = window.prompt('TOC label', suggested);
+        const label = (value || '').replace(/\s+/g, ' ').trim();
+        if (!label) return;
+
+        const id = `toc-${Date.now()}-${slugifyForId(label) || 'section'}`;
+        const { from } = editor.state.selection;
+        editor.chain().focus().setTextSelection(from).insertContent({ type: 'tocAnchor', attrs: { id, label, level: 'sub' } }).run();
+    }, [editor]);
 
     const closeTocMenu = useCallback(() => setTocMenu(null), []);
 
@@ -168,6 +232,19 @@ const RichTextEditor = ({
                     selectionText: attrs.label || '',
                     isExisting: true
                 });
+                return;
+            }
+
+            if (empty) {
+                e.preventDefault();
+                const parentText = editor.state.selection.$from.parent?.textContent || '';
+                setTocMenu({
+                    x: e.clientX,
+                    y: e.clientY,
+                    label: getAutoTocLabel(parentText, 8) || 'Section',
+                    selectionText: parentText,
+                    isExisting: false
+                });
             }
         },
         [editor]
@@ -179,8 +256,8 @@ const RichTextEditor = ({
         if (tocMenu.isExisting) {
             // REMOVE Logic
             // To "Remove", we just replace the node with its text label
-            const text = tocMenu.label;
-            editor.chain().focus().insertContent(text).run();
+            const text = (tocMenu.label || '').trim();
+            editor.chain().focus().deleteSelection().insertContent(text).run();
         } else {
             // ADD Logic ('main' or 'sub')
             const label = tocMenu.label.replace(/\s+/g, ' ').trim();
@@ -205,12 +282,121 @@ const RichTextEditor = ({
         closeTocMenu();
     }, [editor, tocMenu, closeTocMenu]);
 
+    const selectedImageWidth = Number.parseInt(String(selectedImage?.width || '100').replace('%', ''), 10) || 100;
+
+    const updateSelectedImage = useCallback((attrs) => {
+        if (!editor || !editor.isActive('image')) return;
+        editor.chain().focus().updateAttributes('image', attrs).run();
+    }, [editor]);
+
     return (
-        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-xl overflow-hidden relative">
-            <EditorToolbar editor={editor} addImage={addImage} />
+        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-xl relative overflow-visible">
+            <div ref={toolbarSentinelRef} className="h-1 w-full" />
+            <EditorToolbar
+                editor={editor}
+                addImageFromComputer={addImageFromComputer}
+                openImageLibrary={openImageLibrary}
+                detached={toolbarDetached}
+                addTocAtCursor={addTocAtCursor}
+            />
             <div className="bg-[var(--bg-primary)]" onContextMenu={onEditorContextMenu}>
                 <EditorContent editor={editor} />
             </div>
+
+            {selectedImage && (
+                <div className="sticky bottom-4 z-20 px-4 pb-4 pointer-events-none">
+                    <div className="ml-auto max-w-md rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/95 backdrop-blur-md shadow-2xl p-3 pointer-events-auto">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Image Tools</span>
+                            <button
+                                type="button"
+                                onClick={() => editor?.chain().focus().deleteSelection().run()}
+                                className="p-1 rounded-md text-[var(--text-secondary)] hover:text-red-500 hover:bg-[var(--bg-primary)] transition-colors"
+                                title="Remove image"
+                            >
+                                <Eraser size={14} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-1 mb-3">
+                            {[40, 60, 80, 100].map((size) => (
+                                <button
+                                    key={size}
+                                    type="button"
+                                    onClick={() => updateSelectedImage({ width: `${size}%` })}
+                                    className={`px-2 py-1.5 text-xs rounded-md border transition-colors ${selectedImageWidth === size
+                                        ? 'bg-blue-600 text-white border-blue-500'
+                                        : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                                        }`}
+                                >
+                                    {size}%
+                                </button>
+                            ))}
+                        </div>
+
+                        <input
+                            type="range"
+                            min={25}
+                            max={100}
+                            value={selectedImageWidth}
+                            onChange={(e) => updateSelectedImage({ width: `${e.target.value}%` })}
+                            className="w-full accent-blue-500 mb-3"
+                        />
+
+                        <div className="grid grid-cols-3 gap-1 mb-3">
+                            <button
+                                type="button"
+                                onClick={() => updateSelectedImage({ align: 'left' })}
+                                className={`px-2 py-1.5 text-xs rounded-md border flex items-center justify-center gap-1 transition-colors ${selectedImage?.align === 'left'
+                                    ? 'bg-blue-600 text-white border-blue-500'
+                                    : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                                    }`}
+                            >
+                                <AlignLeft size={12} /> Left
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => updateSelectedImage({ align: 'center' })}
+                                className={`px-2 py-1.5 text-xs rounded-md border flex items-center justify-center gap-1 transition-colors ${!selectedImage?.align || selectedImage?.align === 'center'
+                                    ? 'bg-blue-600 text-white border-blue-500'
+                                    : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                                    }`}
+                            >
+                                <AlignCenter size={12} /> Center
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => updateSelectedImage({ align: 'right' })}
+                                className={`px-2 py-1.5 text-xs rounded-md border flex items-center justify-center gap-1 transition-colors ${selectedImage?.align === 'right'
+                                    ? 'bg-blue-600 text-white border-blue-500'
+                                    : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                                    }`}
+                            >
+                                <AlignRight size={12} /> Right
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onClick={addImageFromComputer}
+                                className="px-3 py-2 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Upload size={12} />
+                                Replace
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openImageLibrary}
+                                className="px-3 py-2 rounded-md border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-semibold hover:bg-[var(--bg-primary)] transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ImageIcon size={12} />
+                                Library
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {tocMenu && (
                 <div
@@ -246,7 +432,7 @@ const RichTextEditor = ({
                             <button
                                 type="button"
                                 onClick={() => handleTocAction('sub')}
-                                className="col-span-2 px-3 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
+                                className="col-span-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
                             >
                                 Add TOC Entry
                             </button>
@@ -269,6 +455,12 @@ const RichTextEditor = ({
                 className="hidden"
                 accept="image/*"
                 onChange={handleImageUpload}
+            />
+
+            <MediaLibraryModal
+                isOpen={isLibraryOpen}
+                onClose={() => setIsLibraryOpen(false)}
+                onSelect={onLibraryImageSelect}
             />
         </div>
     );
