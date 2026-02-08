@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { AlignCenter, AlignLeft, AlignRight, Eraser, Image as ImageIcon, Upload, X } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, Check, Eraser, Image as ImageIcon, Upload, X } from 'lucide-react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import EditorToolbar from './EditorToolbar';
 import TocAnchor from './tiptap/TocAnchor';
 import EnhancedImage from './tiptap/EnhancedImage';
@@ -36,6 +40,9 @@ const RichTextEditor = ({
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [toolbarDetached, setToolbarDetached] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [placementMode, setPlacementMode] = useState(false);
+    const [selectionMenu, setSelectionMenu] = useState(null);
+    const [slashMenu, setSlashMenu] = useState(null);
     const toolbarSentinelRef = useRef(null);
 
     const editor = useEditor({
@@ -43,6 +50,12 @@ const RichTextEditor = ({
             StarterKit,
             Underline,
             TocAnchor,
+            Table.configure({
+                resizable: true,
+            }),
+            TableRow,
+            TableHeader,
+            TableCell,
             EnhancedImage.configure({
                 allowBase64: false, // Force uploads to prevent oversized docs
             }),
@@ -124,12 +137,46 @@ const RichTextEditor = ({
         };
     }, [editor]);
 
+    useEffect(() => {
+        if (!selectedImage) {
+            setPlacementMode(false);
+        }
+    }, [selectedImage]);
+
+    useEffect(() => {
+        if (!editor) return undefined;
+
+        const syncSelectionMenu = () => {
+            const { empty, from, to } = editor.state.selection;
+            if (empty) {
+                setSelectionMenu(null);
+                return;
+            }
+            const start = editor.view.coordsAtPos(from);
+            const end = editor.view.coordsAtPos(to);
+            const x = Math.min(window.innerWidth - 220, Math.max(12, (start.left + end.left) / 2 - 92));
+            const y = Math.max(12, Math.min(start.top, end.top) - 46);
+            setSelectionMenu({ x, y });
+        };
+
+        syncSelectionMenu();
+        editor.on('selectionUpdate', syncSelectionMenu);
+        window.addEventListener('scroll', syncSelectionMenu, true);
+        window.addEventListener('resize', syncSelectionMenu);
+        return () => {
+            editor.off('selectionUpdate', syncSelectionMenu);
+            window.removeEventListener('scroll', syncSelectionMenu, true);
+            window.removeEventListener('resize', syncSelectionMenu);
+        };
+    }, [editor]);
+
     const handleImageUpload = async (e) => {
         const file = e.target.files?.[0];
         if (file && onImageUpload) {
             const url = await onImageUpload(file);
             if (url) {
-                editor.chain().focus().setImage({ src: url, width: '100%', align: 'center' }).run();
+                editor.chain().focus().setImage({ src: url, width: '60%', align: 'center' }).run();
+                setPlacementMode(true);
             }
         }
         // Reset input
@@ -143,7 +190,8 @@ const RichTextEditor = ({
             // Fallback to URL prompt if no upload handler
             const url = window.prompt('URL');
             if (url) {
-                editor.chain().focus().setImage({ src: url, width: '100%', align: 'center' }).run();
+                editor.chain().focus().setImage({ src: url, width: '60%', align: 'center' }).run();
+                setPlacementMode(true);
             }
         }
     }, [editor, onImageUpload]);
@@ -154,7 +202,34 @@ const RichTextEditor = ({
 
     const onLibraryImageSelect = useCallback((mediaItem) => {
         if (!mediaItem?.url || !editor) return;
-        editor.chain().focus().setImage({ src: mediaItem.url, width: '100%', align: 'center' }).run();
+        editor.chain().focus().setImage({
+            src: mediaItem.url,
+            width: '60%',
+            align: 'center',
+            alt: mediaItem.alt || mediaItem.title || '',
+            title: mediaItem.caption || mediaItem.title || '',
+        }).run();
+        setPlacementMode(true);
+    }, [editor]);
+
+    const addAppPromoCard = useCallback(() => {
+        if (!editor) return;
+        editor.chain().focus().insertContent(`
+            <div class="dodohabit-app-card" contenteditable="false">
+                <div class="dodohabit-app-card__icon">D</div>
+                <div class="dodohabit-app-card__content">
+                    <div class="dodohabit-app-card__title">Get DodoHabit on Play Store</div>
+                    <div class="dodohabit-app-card__subtitle">Build habits that stick, one day at a time.</div>
+                </div>
+                <a class="dodohabit-app-card__cta" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a>
+            </div>
+            <p></p>
+        `).run();
+    }, [editor]);
+
+    const addTableAtCursor = useCallback(() => {
+        if (!editor) return;
+        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
     }, [editor]);
 
     const addTocAtCursor = useCallback(() => {
@@ -170,7 +245,150 @@ const RichTextEditor = ({
         editor.chain().focus().setTextSelection(from).insertContent({ type: 'tocAnchor', attrs: { id, label, level: 'sub' } }).run();
     }, [editor]);
 
+    const closeSlashMenu = useCallback(() => setSlashMenu(null), []);
     const closeTocMenu = useCallback(() => setTocMenu(null), []);
+
+    const syncSlashMenu = useCallback(() => {
+        if (!editor) return;
+        const { from, empty, $from } = editor.state.selection;
+        if (!empty) {
+            setSlashMenu(null);
+            return;
+        }
+
+        const blockStart = $from.start();
+        const textBefore = editor.state.doc.textBetween(blockStart, from, '\n', '\0');
+        const match = textBefore.match(/(?:^|\s)\/([a-z0-9-]*)$/i);
+        if (!match) {
+            setSlashMenu(null);
+            return;
+        }
+
+        const query = (match[1] || '').toLowerCase();
+        const coords = editor.view.coordsAtPos(from);
+        const x = Math.min(window.innerWidth - 280, Math.max(12, coords.left));
+        setSlashMenu({
+            x,
+            y: coords.bottom + 8,
+            query,
+            range: {
+                from: from - query.length - 1,
+                to: from,
+            },
+        });
+    }, [editor]);
+
+    const slashCommands = React.useMemo(() => {
+        if (!editor) return [];
+        return [
+            {
+                id: 'h1',
+                label: 'Heading 1',
+                keywords: 'h1 heading title',
+                run: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+            },
+            {
+                id: 'h2',
+                label: 'Heading 2',
+                keywords: 'h2 heading section',
+                run: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+            },
+            {
+                id: 'quote',
+                label: 'Quote',
+                keywords: 'quote blockquote callout',
+                run: () => editor.chain().focus().toggleBlockquote().run(),
+            },
+            {
+                id: 'code',
+                label: 'Code Block',
+                keywords: 'code snippet',
+                run: () => editor.chain().focus().toggleCodeBlock().run(),
+            },
+            {
+                id: 'table',
+                label: 'Table 3x3',
+                keywords: 'table grid rows columns',
+                run: addTableAtCursor,
+            },
+            {
+                id: 'image',
+                label: 'Image',
+                keywords: 'image photo upload',
+                run: addImageFromComputer,
+            },
+            {
+                id: 'toc',
+                label: 'TOC Marker',
+                keywords: 'toc table of contents section',
+                run: addTocAtCursor,
+            },
+            {
+                id: 'app',
+                label: 'DodoHabit App Card',
+                keywords: 'app playstore card cta',
+                run: addAppPromoCard,
+            },
+        ];
+    }, [editor, addImageFromComputer, addTocAtCursor, addAppPromoCard, addTableAtCursor]);
+
+    const filteredSlashCommands = React.useMemo(() => {
+        if (!slashMenu) return [];
+        const query = slashMenu.query || '';
+        if (!query) return slashCommands;
+        return slashCommands.filter((command) =>
+            command.label.toLowerCase().includes(query) ||
+            command.keywords.includes(query)
+        );
+    }, [slashCommands, slashMenu]);
+
+    const runSlashCommand = useCallback((command) => {
+        if (!editor || !slashMenu || !command) return;
+        editor.chain().focus().deleteRange(slashMenu.range).run();
+        command.run();
+        closeSlashMenu();
+    }, [editor, slashMenu, closeSlashMenu]);
+
+    const setBubbleLink = useCallback(() => {
+        if (!editor) return;
+        const previousUrl = editor.getAttributes('link').href;
+        const url = window.prompt('URL', previousUrl);
+        if (url === null) return;
+        if (url === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            return;
+        }
+        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }, [editor]);
+
+    useEffect(() => {
+        if (!editor) return undefined;
+        editor.on('selectionUpdate', syncSlashMenu);
+        editor.on('update', syncSlashMenu);
+        return () => {
+            editor.off('selectionUpdate', syncSlashMenu);
+            editor.off('update', syncSlashMenu);
+        };
+    }, [editor, syncSlashMenu]);
+
+    useEffect(() => {
+        if (!slashMenu) return undefined;
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                closeSlashMenu();
+            }
+        };
+        const onMouseDown = (event) => {
+            if (event.target?.closest?.('[data-slash-menu]')) return;
+            closeSlashMenu();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('mousedown', onMouseDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('mousedown', onMouseDown);
+        };
+    }, [slashMenu, closeSlashMenu]);
 
     useEffect(() => {
         if (!tocMenu) return;
@@ -303,14 +521,51 @@ const RichTextEditor = ({
                 openImageLibrary={openImageLibrary}
                 detached={toolbarDetached}
                 addTocAtCursor={addTocAtCursor}
+                addAppPromoCard={addAppPromoCard}
+                addTableAtCursor={addTableAtCursor}
             />
+            {editor && selectionMenu && (
+                <div
+                    className="fixed z-50 flex items-center gap-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-xl p-1"
+                    style={{ left: selectionMenu.x, top: selectionMenu.y }}
+                >
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`px-2 py-1 text-xs rounded ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]'}`}
+                    >
+                        B
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`px-2 py-1 text-xs rounded ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]'}`}
+                    >
+                        I
+                    </button>
+                    <button
+                        type="button"
+                        onClick={setBubbleLink}
+                        className={`px-2 py-1 text-xs rounded ${editor.isActive('link') ? 'bg-blue-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]'}`}
+                    >
+                        Link
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                        className={`px-2 py-1 text-xs rounded ${editor.isActive('blockquote') ? 'bg-blue-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)]'}`}
+                    >
+                        Quote
+                    </button>
+                </div>
+            )}
             <div className="bg-[var(--bg-primary)]" onContextMenu={onEditorContextMenu}>
                 <EditorContent editor={editor} />
             </div>
 
             {selectedImage && (
                 <div className="sticky bottom-4 z-20 px-4 pb-4 pointer-events-none">
-                    <div className="ml-auto max-w-md rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/95 backdrop-blur-md shadow-2xl p-3 pointer-events-auto">
+                    <div className="ml-auto max-w-md rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-3 pointer-events-auto">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Image Tools</span>
                             <button
@@ -322,6 +577,31 @@ const RichTextEditor = ({
                                 <Eraser size={14} />
                             </button>
                         </div>
+
+                        {placementMode && (
+                            <div className="mb-3 rounded-lg border border-blue-500/35 bg-blue-500/10 p-2 flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setPlacementMode(false)}
+                                    className="px-2.5 py-1.5 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors inline-flex items-center gap-1"
+                                >
+                                    <Check size={12} />
+                                    Confirm
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        editor?.chain().focus().deleteSelection().run();
+                                        setPlacementMode(false);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors inline-flex items-center gap-1"
+                                >
+                                    <X size={12} />
+                                    Cancel
+                                </button>
+                                <span className="text-[10px] text-[var(--text-secondary)]">Adjust size + alignment, then confirm placement.</span>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-4 gap-1 mb-3">
                             {[40, 60, 80, 100].map((size) => (
@@ -399,6 +679,30 @@ const RichTextEditor = ({
                                 Library
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {slashMenu && filteredSlashCommands.length > 0 && (
+                <div
+                    data-slash-menu
+                    className="fixed z-50 w-64 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-2"
+                    style={{ left: slashMenu.x, top: slashMenu.y }}
+                >
+                    <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+                        Slash Commands
+                    </div>
+                    <div className="mt-1 space-y-1">
+                        {filteredSlashCommands.slice(0, 8).map((command) => (
+                            <button
+                                key={command.id}
+                                type="button"
+                                onClick={() => runSlashCommand(command)}
+                                className="w-full text-left px-2.5 py-2 rounded-lg text-xs text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                {command.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}

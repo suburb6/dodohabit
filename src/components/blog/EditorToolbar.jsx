@@ -17,7 +17,9 @@ import {
     Heading2,
     Undo,
     Redo,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Smartphone,
+    Table2
 } from 'lucide-react';
 import ImageSourceMenu from './ImageSourceMenu';
 
@@ -28,9 +30,11 @@ import ImageSourceMenu from './ImageSourceMenu';
  *   openImageLibrary: () => void,
  *   detached?: boolean,
  *   addTocAtCursor?: () => void,
+ *   addAppPromoCard?: () => void,
+ *   addTableAtCursor?: () => void,
  * }} props
  */
-const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detached = false, addTocAtCursor }) => {
+const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detached = false, addTocAtCursor, addAppPromoCard, addTableAtCursor }) => {
     if (!editor) {
         return null;
     }
@@ -240,6 +244,18 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
                 title="Add TOC marker at cursor"
             >
                 TOC
+            </ToolbarButton>
+            <ToolbarButton
+                onClick={addAppPromoCard}
+                title="Insert DodoHabit Play Store card"
+            >
+                <Smartphone size={18} />
+            </ToolbarButton>
+            <ToolbarButton
+                onClick={addTableAtCursor}
+                title="Insert table"
+            >
+                <Table2 size={18} />
             </ToolbarButton>
             </div>
         </div>

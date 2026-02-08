@@ -45,6 +45,32 @@
     margin: 2rem 0;
 }
 
+.ProseMirror table,
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.ProseMirror th,
+.ProseMirror td,
+.prose th,
+.prose td {
+    border: 1px solid var(--border-color);
+    padding: 0.55rem 0.7rem;
+    vertical-align: top;
+}
+
+.ProseMirror th,
+.prose th {
+    background: color-mix(in srgb, var(--bg-secondary) 85%, #2563eb 15%);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
 .ProseMirror img {
     max-width: 100%;
     height: auto;
@@ -179,4 +205,67 @@
     border: 1px solid rgba(255, 255, 255, 0.22);
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(6px);
+}
+
+.ProseMirror .dodohabit-app-card,
+.prose .dodohabit-app-card {
+    margin: 1.25rem 0;
+    border-radius: 14px;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    background: linear-gradient(120deg, rgba(37, 99, 235, 0.18), rgba(34, 211, 238, 0.1));
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ProseMirror .dodohabit-app-card__icon,
+.prose .dodohabit-app-card__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #22d3ee);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex: 0 0 auto;
+}
+
+.ProseMirror .dodohabit-app-card__content,
+.prose .dodohabit-app-card__content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ProseMirror .dodohabit-app-card__title,
+.prose .dodohabit-app-card__title {
+    color: var(--text-primary);
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1.2;
+}
+
+.ProseMirror .dodohabit-app-card__subtitle,
+.prose .dodohabit-app-card__subtitle {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    margin-top: 2px;
+}
+
+.ProseMirror .dodohabit-app-card__cta,
+.prose .dodohabit-app-card__cta {
+    border-radius: 999px;
+    border: 1px solid rgba(96, 165, 250, 0.35);
+    background: rgba(37, 99, 235, 0.2);
+    color: #bfdbfe;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    text-decoration: none !important;
+    flex: 0 0 auto;
 }

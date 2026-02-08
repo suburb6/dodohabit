@@ -32,6 +32,7 @@ const PostEditor = () => {
     const [tocLabelDrafts, setTocLabelDrafts] = useState({});
     const savedRef = useRef(false);
     const pendingIdRef = useRef(null);
+    const initializedPostIdRef = useRef(null);
     const authorPhotoInputRef = useRef(null);
     const authorPhotoMenuRef = useRef(null);
 
@@ -58,12 +59,16 @@ const PostEditor = () => {
         if (!isNew) {
             const existingPost = getPostById(id);
             if (existingPost) {
+                if (initializedPostIdRef.current === id) {
+                    return;
+                }
                 setPost({
                     ...existingPost,
                     featuredBadges: Array.isArray(existingPost.featuredBadges)
                         ? existingPost.featuredBadges.slice(0, 2)
                         : []
                 });
+                initializedPostIdRef.current = id;
                 if (pendingIdRef.current === id) {
                     pendingIdRef.current = null;
                 }
@@ -74,6 +79,10 @@ const PostEditor = () => {
             }
         }
     }, [id, isNew, getPostById, navigate, loading, posts]);
+
+    useEffect(() => {
+        initializedPostIdRef.current = null;
+    }, [id]);
 
     // Mark dirty on any post field change (skip initial load)
     const initialLoadDone = useRef(false);
@@ -676,7 +685,7 @@ const PostEditor = () => {
                             </div>
                         </div>
 
-                        <div className="sticky top-20 z-20">
+                        <div className="sticky top-20 z-20 self-start">
                             <div
                                 data-lenis-prevent
                                 className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft max-h-[calc(100vh-6.25rem)] overflow-y-auto thin-scrollbar"
