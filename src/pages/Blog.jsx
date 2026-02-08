@@ -7,6 +7,16 @@ import { readingTime } from 'reading-time-estimator';
 import { formatBlogDate } from '../utils/dateFormat';
 import { Play, Smartphone } from 'lucide-react';
 
+const toPlainText = (html) => (html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const getLeadSnippet = (post, minWords = 30, maxWords = 40) => {
+    const source = toPlainText(post?.content || '') || (post?.excerpt || '').trim();
+    if (!source) return '';
+    const words = source.split(' ').filter(Boolean);
+    if (words.length <= minWords) return `${words.join(' ')}...`;
+    const count = Math.min(maxWords, words.length);
+    return `${words.slice(0, count).join(' ')}...`;
+};
+
 const Blog = () => {
     const { getPublishedPosts, loading } = useBlog();
     const posts = getPublishedPosts();
@@ -14,6 +24,7 @@ const Blog = () => {
     const recentPosts = posts.slice(1);
     const featuredStats = featuredPost ? readingTime(featuredPost.content || '') : null;
     const featuredLatestDate = featuredPost?.updatedAt || featuredPost?.publishedAt || featuredPost?.createdAt;
+    const featuredLead = featuredPost ? getLeadSnippet(featuredPost, 30, 40) : '';
 
     if (loading) {
         return (
@@ -105,9 +116,11 @@ const Blog = () => {
                                     {featuredStats?.text && <span>{featuredStats.text}</span>}
                                 </div>
                             )}
-                            <p className="text-[var(--text-secondary)] text-lg leading-relaxed line-clamp-3">
-                                {featuredPost.excerpt}
-                            </p>
+                            {featuredLead && (
+                                <p className="text-[var(--text-secondary)] text-lg leading-relaxed line-clamp-3">
+                                    {featuredLead}
+                                </p>
+                            )}
                             <a
                                 href={`/blog/${featuredPost.slug}`}
                                 className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
