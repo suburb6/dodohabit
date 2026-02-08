@@ -33,7 +33,7 @@ const Blog = () => {
 
 
     return (
-        <div className="min-h-screen pt-24 pb-20 px-4 md:px-8 max-w-[1800px] mx-auto">
+        <div className="min-h-screen pt-24 pb-20 px-5 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-[1800px] mx-auto">
             <SEO
                 title="Blog"
                 description="Insights on habit building, productivity, and health tracking. Learn how to transform your daily routine with DodoHabit."

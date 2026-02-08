@@ -269,7 +269,7 @@ const BlogPost = () => {
             </div>
             {/* Header */}
             {/* Header */}
-            <header className="max-w-4xl mx-auto px-4 md:px-8 mb-16 text-center pt-8">
+            <header className="max-w-5xl mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 mb-14 text-center pt-8">
 
                 <h1 className="text-4xl md:text-6xl font-extrabold text-[var(--text-primary)] leading-tight mb-8">
                     {post.title}
@@ -294,7 +294,7 @@ const BlogPost = () => {
 
             {/* Featured Image */}
             {post.featuredImage && (
-                <div className="max-w-6xl mx-auto px-4 md:px-8 mb-16">
+                <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 mb-16">
                     <div className="rounded-3xl overflow-hidden bg-[var(--bg-secondary)] shadow-2xl border border-[var(--border-color)]">
                         <div className="aspect-[21/9] relative">
                             <img
@@ -343,7 +343,7 @@ const BlogPost = () => {
             )}
 
             {/* Content & Sidebar */}
-            <div className="max-w-[1600px] mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 2xl:gap-20">
+            <div className="max-w-[1700px] mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 grid grid-cols-1 lg:grid-cols-12 gap-12 2xl:gap-20">
                 {/* Table of Contents - Desktop Sidebar */}
                 <div className="hidden lg:block lg:col-span-3">
                     <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl mb-8">
@@ -385,7 +385,7 @@ const BlogPost = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="lg:col-span-8 2xl:col-span-8">
+                <div className="lg:col-span-8 2xl:col-span-8 w-full max-w-[860px] 2xl:max-w-[900px]">
                     {toc.length > 0 && (
                         <div className="lg:hidden sticky top-24 z-20 mb-5">
                             <button
@@ -407,11 +407,11 @@ const BlogPost = () => {
                     )}
 
                     <div
-                        className="prose dark:prose-invert prose-lg max-w-none 2xl:prose-xl
+                        className="prose dark:prose-invert prose-base sm:prose-lg max-w-none
                         prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:scroll-mt-32
                         prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
                         prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-                        prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed prose-p:mb-6
+                        prose-p:text-[var(--text-secondary)] prose-p:leading-8 prose-p:mb-6
                         prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
                         prose-strong:text-[var(--text-primary)] prose-strong:font-bold
                         prose-code:text-blue-600 dark:prose-code:text-blue-300 prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
