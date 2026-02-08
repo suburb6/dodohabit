@@ -68,7 +68,11 @@ const PostEditor = () => {
     const [bodyUploading, setBodyUploading] = useState(false);
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(true);
     const [tocOpen, setTocOpen] = useState(true);
+    const [historyOpen, setHistoryOpen] = useState(true);
+    const [tocRowsVisible, setTocRowsVisible] = useState(7);
+    const [historyRowsVisible, setHistoryRowsVisible] = useState(6);
     const [authorPhotoMenuOpen, setAuthorPhotoMenuOpen] = useState(false);
     const [authorPhotoLibraryOpen, setAuthorPhotoLibraryOpen] = useState(false);
     const [tocLabelDrafts, setTocLabelDrafts] = useState({});
@@ -371,6 +375,10 @@ const PostEditor = () => {
             (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
     }, [cloudHistoryEntries, historyEntries]);
+    const visibleTocEntries = useMemo(() => tocEntries.items.slice(0, tocRowsVisible), [tocEntries.items, tocRowsVisible]);
+    const hasMoreTocEntries = tocEntries.items.length > tocRowsVisible;
+    const visibleHistoryEntries = useMemo(() => mergedHistoryEntries.slice(0, historyRowsVisible), [mergedHistoryEntries, historyRowsVisible]);
+    const hasMoreHistoryEntries = mergedHistoryEntries.length > historyRowsVisible;
 
     useEffect(() => {
         if (!initialLoadDone.current) return;
@@ -835,15 +843,23 @@ const PostEditor = () => {
 
                     {/* Sidebar Settings */}
                     <div className="xl:col-span-1">
-                        <div className="xl:sticky xl:top-[5.25rem] xl:h-[calc(100vh-6.25rem)] flex flex-col gap-4">
+                        <div className="xl:sticky xl:top-[5.25rem] xl:h-[calc(100vh-6.25rem)]">
                         <div
                             data-lenis-prevent
-                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft xl:max-h-[58vh] overflow-y-auto thin-scrollbar"
+                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft h-full overflow-y-auto thin-scrollbar"
                         >
-                            <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
-                                Post Settings
-                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setSettingsOpen((v) => !v)}
+                                className="flex items-center justify-between w-full text-left"
+                            >
+                                <span className="font-bold text-[var(--text-primary)] text-base">
+                                    Post Settings
+                                </span>
+                                {settingsOpen ? <ChevronUp size={14} className="text-[var(--text-secondary)]" /> : <ChevronDown size={14} className="text-[var(--text-secondary)]" />}
+                            </button>
 
+                            {settingsOpen && (
                             <div className="space-y-3">
                                 <div>
                                     <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">Author</label>
@@ -939,9 +955,10 @@ const PostEditor = () => {
                                     />
                                 </div>
                             </div>
-                        </div>
+                            )}
+                            <hr className="border-[var(--border-color)]" />
 
-                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-soft min-h-[250px] xl:flex-1 xl:min-h-0 flex flex-col">
+                        <div className="pt-1">
                                 <button
                                     type="button"
                                     onClick={() => setTocOpen((v) => !v)}
@@ -963,102 +980,140 @@ const PostEditor = () => {
                                 </button>
 
                                 {tocOpen && (
-                                    <div className="mt-2 space-y-2 overflow-y-auto pr-1 thin-scrollbar">
-                                        {tocEntries.items.length > 0 && tocEntries.items.map((item) => {
-                                            const isHeading = item.type === 'heading';
-                                            const isHidden = isHeading && tocHiddenArr.some((t) => normalizeLabel(t) === normalizeLabel(item.text));
-                                            const isSub = item.level === 'h3' || item.level === 'sub';
-                                            const key = tocItemKey(item);
-
-                                            return (
-                                                <div
-                                                    key={key}
-                                                    className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-2 group ${isHidden ? 'opacity-50' : ''} ${isSub ? 'ml-4 border-l-2 border-l-blue-400' : ''}`}
-                                                    onClick={(event) => {
-                                                        if (event.target.closest('input') || event.target.closest('button')) return;
-                                                        scrollToTocEntry(item);
-                                                    }}
-                                                >
-                                                    {isHeading ? (
-                                                        <Hash size={12} className={`shrink-0 ${item.level === 'h1' ? 'text-blue-500' : item.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
-                                                    ) : (
-                                                        <div className="text-blue-400 shrink-0 select-none">↳</div>
-                                                    )}
-                                                    <input
-                                                        value={tocLabelDrafts[key] ?? item.text}
-                                                        onFocus={() => setTocEditingKey(key)}
-                                                        onChange={(e) => setTocLabelDrafts((drafts) => ({ ...drafts, [key]: e.target.value }))}
-                                                        onBlur={(e) => {
-                                                            renameTocEntry(item, e.target.value);
-                                                            setTocEditingKey((current) => (current === key ? null : current));
-                                                        }}
-                                                        className={`text-xs flex-1 bg-transparent focus:outline-none ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}
-                                                        title="Edit TOC text"
-                                                    />
-                                                    {isHeading && (
-                                                        <span className="text-[10px] text-[var(--text-secondary)] uppercase font-bold shrink-0">{item.level}</span>
-                                                    )}
+                                    <div className="mt-2 space-y-2">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Rows</span>
+                                            <div className="flex items-center gap-1">
+                                                {[4, 7, 12].map((size) => (
                                                     <button
+                                                        key={size}
                                                         type="button"
-                                                        onClick={() => scrollToTocEntry(item)}
-                                                        className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-blue-400 transition-all"
-                                                        title="Jump to this section"
+                                                        onClick={() => setTocRowsVisible(size)}
+                                                        className={`text-[10px] px-2 py-1 rounded border transition-colors ${tocRowsVisible === size
+                                                            ? 'border-blue-500/50 bg-blue-500/15 text-blue-300'
+                                                            : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                                                     >
-                                                        <Navigation size={12} />
+                                                        {size}
                                                     </button>
-                                                    {isHeading ? (
-                                                        isHidden ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => unhideFromToc(item.text)}
-                                                                className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-green-400 transition-all"
-                                                                title="Show in TOC"
-                                                            >
-                                                                <Eye size={12} />
-                                                            </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setTocRowsVisible(Math.max(tocEntries.items.length, 1))}
+                                                    className={`text-[10px] px-2 py-1 rounded border transition-colors ${(tocRowsVisible >= tocEntries.items.length && tocEntries.items.length > 0)
+                                                        ? 'border-blue-500/50 bg-blue-500/15 text-blue-300'
+                                                        : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
+                                                >
+                                                    All
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 overflow-y-auto pr-1 thin-scrollbar max-h-[35vh]">
+                                            {visibleTocEntries.length > 0 && visibleTocEntries.map((item) => {
+                                                const isHeading = item.type === 'heading';
+                                                const isHidden = isHeading && tocHiddenArr.some((t) => normalizeLabel(t) === normalizeLabel(item.text));
+                                                const isSub = item.level === 'h3' || item.level === 'sub';
+                                                const key = tocItemKey(item);
+
+                                                return (
+                                                    <div
+                                                        key={key}
+                                                        className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-2 group ${isHidden ? 'opacity-50' : ''} ${isSub ? 'ml-4 border-l-2 border-l-blue-400' : ''}`}
+                                                        onClick={(event) => {
+                                                            if (event.target.closest('input') || event.target.closest('button')) return;
+                                                            scrollToTocEntry(item);
+                                                        }}
+                                                    >
+                                                        {isHeading ? (
+                                                            <Hash size={12} className={`shrink-0 ${item.level === 'h1' ? 'text-blue-500' : item.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
+                                                        ) : (
+                                                            <div className="text-blue-400 shrink-0 select-none">↳</div>
+                                                        )}
+                                                        <input
+                                                            value={tocLabelDrafts[key] ?? item.text}
+                                                            onFocus={() => setTocEditingKey(key)}
+                                                            onChange={(e) => setTocLabelDrafts((drafts) => ({ ...drafts, [key]: e.target.value }))}
+                                                            onBlur={(e) => {
+                                                                renameTocEntry(item, e.target.value);
+                                                                setTocEditingKey((current) => (current === key ? null : current));
+                                                            }}
+                                                            className={`text-xs flex-1 bg-transparent focus:outline-none ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}
+                                                            title="Edit TOC text"
+                                                        />
+                                                        {isHeading && (
+                                                            <span className="text-[10px] text-[var(--text-secondary)] uppercase font-bold shrink-0">{item.level}</span>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => scrollToTocEntry(item)}
+                                                            className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-blue-400 transition-all"
+                                                            title="Jump to this section"
+                                                        >
+                                                            <Navigation size={12} />
+                                                        </button>
+                                                        {isHeading ? (
+                                                            isHidden ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => unhideFromToc(item.text)}
+                                                                    className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-green-400 transition-all"
+                                                                    title="Show in TOC"
+                                                                >
+                                                                    <Eye size={12} />
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setPost((current) => {
+                                                                            const existing = Array.isArray(current.tocHidden) ? current.tocHidden : [];
+                                                                            if (existing.some((entry) => normalizeLabel(entry) === normalizeLabel(item.text))) return current;
+                                                                            return { ...current, tocHidden: [...existing, item.text] };
+                                                                        });
+                                                                    }}
+                                                                    className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-yellow-400 transition-all"
+                                                                    title="Hide from TOC"
+                                                                >
+                                                                    <EyeOff size={12} />
+                                                                </button>
+                                                            )
                                                         ) : (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => {
-                                                                    setPost((current) => {
-                                                                        const existing = Array.isArray(current.tocHidden) ? current.tocHidden : [];
-                                                                        if (existing.some((entry) => normalizeLabel(entry) === normalizeLabel(item.text))) return current;
-                                                                        return { ...current, tocHidden: [...existing, item.text] };
-                                                                    });
-                                                                }}
-                                                                className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-yellow-400 transition-all"
-                                                                title="Hide from TOC"
+                                                                onClick={() => removeAnchorFromContent(item.sourceIndex)}
+                                                                className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-red-400 transition-all"
+                                                                title="Remove custom TOC entry"
                                                             >
-                                                                <EyeOff size={12} />
+                                                                <X size={12} />
                                                             </button>
-                                                        )
-                                                    ) : (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeAnchorFromContent(item.sourceIndex)}
-                                                            className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-red-400 transition-all"
-                                                            title="Remove custom TOC entry"
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
 
-                                        {tocEntries.items.length === 0 && (
-                                            <p className="text-xs text-[var(--text-secondary)] italic">No TOC entries yet. Add headings or use the cursor TOC action in editor.</p>
+                                            {tocEntries.items.length === 0 && (
+                                                <p className="text-xs text-[var(--text-secondary)] italic">No TOC entries yet. Add headings or use the cursor TOC action in editor.</p>
+                                            )}
+                                        </div>
+                                        {hasMoreTocEntries && (
+                                            <p className="text-[10px] text-[var(--text-secondary)]">+{tocEntries.items.length - visibleTocEntries.length} more entries hidden by row limit.</p>
                                         )}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-soft min-h-[180px] xl:max-h-[34vh] overflow-y-auto thin-scrollbar">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-sm">
-                                        <History size={15} className="text-blue-400" />
-                                        Change History
-                                    </span>
+                            <div className="pt-2 border-t border-[var(--border-color)]">
+                                <div className="flex items-center justify-between mb-3 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setHistoryOpen((v) => !v)}
+                                        className="flex items-center gap-2 text-left"
+                                    >
+                                        <span className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-sm">
+                                            <History size={15} className="text-blue-400" />
+                                            Change History
+                                        </span>
+                                        {historyOpen ? <ChevronUp size={14} className="text-[var(--text-secondary)]" /> : <ChevronDown size={14} className="text-[var(--text-secondary)]" />}
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={handleManualCheckpoint}
@@ -1067,47 +1122,81 @@ const PostEditor = () => {
                                         Save Point
                                     </button>
                                 </div>
-                                <div className="flex items-center gap-2 mb-2 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
-                                    <Cloud size={11} className="text-blue-400" />
-                                    <span>Cloud history</span>
-                                    {historySyncing && <Loader2 size={11} className="animate-spin text-blue-400" />}
-                                </div>
-                                {mergedHistoryEntries.length === 0 ? (
-                                    <p className="text-xs text-[var(--text-secondary)] italic">Snapshots appear while you edit. Cloud snapshots are saved on manual checkpoints and post saves.</p>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {mergedHistoryEntries.slice(0, 14).map((entry) => (
-                                            <button
-                                                key={entry.id}
-                                                type="button"
-                                                onClick={() => openHistoryPreview(entry)}
-                                                className="w-full text-left rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 hover:border-blue-500/45 transition-colors"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-xs font-semibold text-[var(--text-primary)] truncate">{entry.label}</span>
-                                                    <div className="flex items-center gap-2 shrink-0">
-                                                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${entry.source === 'cloud'
-                                                            ? 'text-blue-300 border-blue-400/30 bg-blue-500/10'
-                                                            : 'text-[var(--text-secondary)] border-[var(--border-color)] bg-[var(--bg-secondary)]'
-                                                            }`}>
-                                                            {entry.source === 'cloud' ? 'Cloud' : 'Local'}
-                                                        </span>
-                                                        <span className="text-[10px] text-[var(--text-secondary)]">
-                                                            {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {entry.preview && (
-                                                    <p className="mt-1 text-[10px] text-[var(--text-secondary)] line-clamp-2">{entry.preview}</p>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
+                                {historyOpen && (
+                                    <>
+                                        <div className="flex items-center gap-2 mb-2 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+                                            <Cloud size={11} className="text-blue-400" />
+                                            <span>Cloud history</span>
+                                            {historySyncing && <Loader2 size={11} className="animate-spin text-blue-400" />}
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2 mb-2">
+                                            <span className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Rows</span>
+                                            <div className="flex items-center gap-1">
+                                                {[4, 8, 12].map((size) => (
+                                                    <button
+                                                        key={size}
+                                                        type="button"
+                                                        onClick={() => setHistoryRowsVisible(size)}
+                                                        className={`text-[10px] px-2 py-1 rounded border transition-colors ${historyRowsVisible === size
+                                                            ? 'border-blue-500/50 bg-blue-500/15 text-blue-300'
+                                                            : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
+                                                    >
+                                                        {size}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setHistoryRowsVisible(Math.max(mergedHistoryEntries.length, 1))}
+                                                    className={`text-[10px] px-2 py-1 rounded border transition-colors ${(historyRowsVisible >= mergedHistoryEntries.length && mergedHistoryEntries.length > 0)
+                                                        ? 'border-blue-500/50 bg-blue-500/15 text-blue-300'
+                                                        : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
+                                                >
+                                                    All
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {mergedHistoryEntries.length === 0 ? (
+                                            <p className="text-xs text-[var(--text-secondary)] italic">Snapshots appear while you edit. Cloud snapshots are saved on manual checkpoints and post saves.</p>
+                                        ) : (
+                                            <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1 thin-scrollbar">
+                                                {visibleHistoryEntries.map((entry) => (
+                                                    <button
+                                                        key={entry.id}
+                                                        type="button"
+                                                        onClick={() => openHistoryPreview(entry)}
+                                                        className="w-full text-left rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 hover:border-blue-500/45 transition-colors"
+                                                    >
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <span className="text-xs font-semibold text-[var(--text-primary)] truncate">{entry.label}</span>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${entry.source === 'cloud'
+                                                                    ? 'text-blue-300 border-blue-400/30 bg-blue-500/10'
+                                                                    : 'text-[var(--text-secondary)] border-[var(--border-color)] bg-[var(--bg-secondary)]'}`}
+                                                                >
+                                                                    {entry.source === 'cloud' ? 'Cloud' : 'Local'}
+                                                                </span>
+                                                                <span className="text-[10px] text-[var(--text-secondary)]">
+                                                                    {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {entry.preview && (
+                                                            <p className="mt-1 text-[10px] text-[var(--text-secondary)] line-clamp-2">{entry.preview}</p>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {hasMoreHistoryEntries && (
+                                            <p className="mt-2 text-[10px] text-[var(--text-secondary)]">+{mergedHistoryEntries.length - visibleHistoryEntries.length} more snapshots hidden by row limit.</p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div >
+            </div >
             </div >
 
             <MediaLibraryModal

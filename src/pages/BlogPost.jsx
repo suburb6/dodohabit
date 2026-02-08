@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlog } from '../contexts/BlogContext';
 import ShareButtons from '../components/blog/ShareButtons';
-import { ArrowLeft, Clock, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, List, X } from 'lucide-react';
 import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import '../components/blog/editor.css'; // Reuse editor styles for content
@@ -16,9 +16,19 @@ const slugifyForId = (value) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-const getReadingAnchorLine = () => {
+const getProgressAnchorLine = () => {
     const viewportHeight = window.innerHeight || 0;
     return Math.round(Math.min(320, Math.max(120, viewportHeight * 0.34)));
+};
+
+const getTocSwitchLine = () => {
+    const viewportHeight = window.innerHeight || 0;
+    return Math.round(Math.min(180, Math.max(84, viewportHeight * 0.22)));
+};
+
+const getTocAdvanceOffset = () => {
+    const viewportHeight = window.innerHeight || 0;
+    return Math.round(Math.min(96, Math.max(36, viewportHeight * 0.08)));
 };
 
 const BlogPost = () => {
@@ -30,6 +40,7 @@ const BlogPost = () => {
     const [processedContent, setProcessedContent] = useState('');
     const [activeId, setActiveId] = useState(null);
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [mobileTocOpen, setMobileTocOpen] = useState(false);
     const articleRef = useRef(null);
 
     useEffect(() => {
@@ -123,13 +134,14 @@ const BlogPost = () => {
         let rafId = null;
 
         const updateScrollUi = () => {
-            const anchorLine = getReadingAnchorLine();
+            const switchLine = getTocSwitchLine();
+            const advanceOffset = getTocAdvanceOffset();
             let nextActive = toc[0]?.id || null;
 
             for (const item of toc) {
                 const node = document.getElementById(item.id);
                 if (!node) continue;
-                if (node.getBoundingClientRect().top <= anchorLine) {
+                if (node.getBoundingClientRect().top <= switchLine + advanceOffset) {
                     nextActive = item.id;
                 } else {
                     break;
@@ -145,12 +157,13 @@ const BlogPost = () => {
             setActiveId((prev) => (prev === nextActive ? prev : nextActive));
 
             if (articleRef.current) {
+                const progressAnchorLine = getProgressAnchorLine();
                 const rect = articleRef.current.getBoundingClientRect();
                 const articleTop = window.scrollY + rect.top;
                 const articleBottom = articleTop + articleRef.current.offsetHeight;
                 const maxScrollableY = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-                const startY = Math.max(0, articleTop - anchorLine);
-                const endY = Math.min(maxScrollableY, articleBottom - anchorLine);
+                const startY = Math.max(0, articleTop - progressAnchorLine);
+                const endY = Math.min(maxScrollableY, articleBottom - progressAnchorLine);
                 const denominator = Math.max(1, endY - startY);
                 const progress = Math.min(1, Math.max(0, (window.scrollY - startY) / denominator));
                 setScrollProgress((prev) => (Math.abs(prev - progress) < 0.002 ? prev : progress));
@@ -177,13 +190,32 @@ const BlogPost = () => {
     const navigateToSection = useCallback((id) => {
         const node = document.getElementById(id);
         if (!node) return;
-        const anchorLine = getReadingAnchorLine();
+        const anchorLine = getTocSwitchLine();
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const y = window.scrollY + node.getBoundingClientRect().top - anchorLine;
         const nextY = Math.max(0, Math.min(maxScroll, y));
         window.scrollTo({ top: nextY, behavior: 'smooth' });
         setActiveId(id);
     }, []);
+
+    const navigateFromMobileToc = useCallback((id) => {
+        navigateToSection(id);
+        setMobileTocOpen(false);
+    }, [navigateToSection]);
+
+    useEffect(() => {
+        if (!mobileTocOpen) return undefined;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') setMobileTocOpen(false);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [mobileTocOpen]);
 
     if (loading) {
         return <div className="min-h-screen pt-32 text-center text-[var(--text-primary)]">Loading...</div>;
@@ -354,6 +386,26 @@ const BlogPost = () => {
 
                 {/* Main Content */}
                 <div className="lg:col-span-8 2xl:col-span-8">
+                    {toc.length > 0 && (
+                        <div className="lg:hidden sticky top-24 z-20 mb-5">
+                            <button
+                                type="button"
+                                onClick={() => setMobileTocOpen(true)}
+                                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/95 backdrop-blur-md px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-xl"
+                            >
+                                <span className="inline-flex items-center gap-2 font-semibold">
+                                    <List size={16} className="text-blue-500" />
+                                    Table of Contents
+                                </span>
+                                {activeId && (
+                                    <span className="block mt-1 text-xs text-[var(--text-secondary)] truncate">
+                                        {toc.find((item) => item.id === activeId)?.text || ''}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    )}
+
                     <div
                         className="prose dark:prose-invert prose-lg max-w-none 2xl:prose-xl
                         prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:scroll-mt-32
@@ -375,6 +427,34 @@ const BlogPost = () => {
                     </div>
                 </div>
             </div>
+
+            {mobileTocOpen && (
+                <div
+                    className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm p-4 flex items-end sm:items-center justify-center"
+                    onClick={() => setMobileTocOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-md rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-4 max-h-[78vh] overflow-y-auto thin-scrollbar"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-extrabold text-[var(--text-secondary)] uppercase tracking-widest">Table of Contents</h3>
+                            <button
+                                type="button"
+                                onClick={() => setMobileTocOpen(false)}
+                                className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <TocNav
+                            items={toc}
+                            activeId={activeId}
+                            onNavigate={navigateFromMobileToc}
+                        />
+                    </div>
+                </div>
+            )}
             {/* Related Posts */}
             {/* Can be implemented later, for now just simple footer area */}
         </article>

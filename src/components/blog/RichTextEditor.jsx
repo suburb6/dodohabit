@@ -282,10 +282,11 @@ const RichTextEditor = ({
 
     const addInstallButton = useCallback(() => {
         if (!editor) return;
-        editor.chain().focus().insertContent(`
-            <p><a class="dodohabit-install-btn" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a></p>
-            <p></p>
-        `).run();
+        editor
+            .chain()
+            .focus()
+            .insertContent(' <a class="dodohabit-install-btn" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a> ')
+            .run();
     }, [editor]);
 
     const openTableBuilder = useCallback(() => {
