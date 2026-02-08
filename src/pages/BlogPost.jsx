@@ -18,7 +18,7 @@ const slugifyForId = (value) =>
 
 const getReadingAnchorLine = () => {
     const viewportHeight = window.innerHeight || 0;
-    return Math.round(Math.min(220, Math.max(104, viewportHeight * 0.28)));
+    return Math.round(Math.min(320, Math.max(120, viewportHeight * 0.34)));
 };
 
 const BlogPost = () => {
@@ -45,6 +45,7 @@ const BlogPost = () => {
             const hidden = new Set((Array.isArray(post.tocHidden) ? post.tocHidden : []).map(normalizeLabel));
             const items = [];
             const customLabels = new Set();
+            const usedIds = new Set();
 
             // Collect headings + custom anchors in DOM order
             div.querySelectorAll('span[data-toc-anchor="true"], h1, h2, h3').forEach((el, index) => {
@@ -63,15 +64,21 @@ const BlogPost = () => {
                 // Custom anchors override same-label headings
                 if (!isAnchor && customLabels.has(normalized)) return;
 
-                let id = el.getAttribute('id');
-                if (!id) {
-                    id = `${isAnchor ? 'toc' : 'heading'}-${index}-${slugifyForId(text) || 'section'}`;
-                    el.setAttribute('id', id);
+                const fallbackId = `${isAnchor ? 'toc' : 'heading'}-${index}-${slugifyForId(text) || 'section'}`;
+                const baseId = el.getAttribute('id') || fallbackId;
+                let id = baseId;
+                let suffix = 2;
+                while (usedIds.has(id)) {
+                    id = `${baseId}-${suffix}`;
+                    suffix += 1;
                 }
+                usedIds.add(id);
+                el.setAttribute('id', id);
 
                 if (isAnchor) {
                     el.setAttribute('data-toc-anchor', 'true');
                     el.setAttribute('data-toc-label', text);
+                    el.setAttribute('data-toc-id', id);
                     customLabels.add(normalized);
                 }
 
@@ -129,15 +136,23 @@ const BlogPost = () => {
                 }
             }
 
+            const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            // Force the final TOC item when user reaches page end and further scrolling is impossible.
+            if (maxScroll > 0 && window.scrollY >= maxScroll - 2) {
+                nextActive = toc[toc.length - 1]?.id || nextActive;
+            }
+
             setActiveId((prev) => (prev === nextActive ? prev : nextActive));
 
             if (articleRef.current) {
                 const rect = articleRef.current.getBoundingClientRect();
                 const articleTop = window.scrollY + rect.top;
                 const articleBottom = articleTop + articleRef.current.offsetHeight;
-                const marker = window.scrollY + anchorLine;
-                const denominator = Math.max(1, articleBottom - articleTop);
-                const progress = Math.min(1, Math.max(0, (marker - articleTop) / denominator));
+                const maxScrollableY = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+                const startY = Math.max(0, articleTop - anchorLine);
+                const endY = Math.min(maxScrollableY, articleBottom - anchorLine);
+                const denominator = Math.max(1, endY - startY);
+                const progress = Math.min(1, Math.max(0, (window.scrollY - startY) / denominator));
                 setScrollProgress((prev) => (Math.abs(prev - progress) < 0.002 ? prev : progress));
             }
 
@@ -163,8 +178,10 @@ const BlogPost = () => {
         const node = document.getElementById(id);
         if (!node) return;
         const anchorLine = getReadingAnchorLine();
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const y = window.scrollY + node.getBoundingClientRect().top - anchorLine;
-        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        const nextY = Math.max(0, Math.min(maxScroll, y));
+        window.scrollTo({ top: nextY, behavior: 'smooth' });
         setActiveId(id);
     }, []);
 

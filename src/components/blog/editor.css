@@ -71,11 +71,116 @@
     font-weight: 700;
 }
 
+.ProseMirror .tableWrapper {
+    margin: 1.25rem 0;
+    overflow-x: auto;
+}
+
+.ProseMirror .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: -2px;
+    width: 4px;
+    background: #3b82f6;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.ProseMirror .selectedCell:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(59, 130, 246, 0.08);
+    pointer-events: none;
+}
+
 .ProseMirror img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
     margin: 1.5rem 0;
+}
+
+.ProseMirror .tiptap-image-node {
+    width: 100%;
+    margin: 1.5rem 0;
+    display: flex;
+}
+
+.ProseMirror .tiptap-image-node--left {
+    justify-content: flex-start;
+}
+
+.ProseMirror .tiptap-image-node--center {
+    justify-content: center;
+}
+
+.ProseMirror .tiptap-image-node--right {
+    justify-content: flex-end;
+}
+
+.ProseMirror .tiptap-image-node__frame {
+    position: relative;
+    max-width: 100%;
+    line-height: 0;
+    border-radius: 0.65rem;
+}
+
+.ProseMirror .tiptap-image-node__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 0.65rem;
+    margin: 0 !important;
+    user-select: none;
+}
+
+.ProseMirror .tiptap-image-node.is-selected .tiptap-image-node__frame {
+    outline: 2px solid rgba(59, 130, 246, 0.75);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+}
+
+.ProseMirror .tiptap-image-node__handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 1px solid #93c5fd;
+    background: #2563eb;
+    box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.65);
+    z-index: 3;
+    padding: 0;
+}
+
+.ProseMirror .tiptap-image-node__handle--nw {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+}
+
+.ProseMirror .tiptap-image-node__handle--ne {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+}
+
+.ProseMirror .tiptap-image-node__handle--sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+}
+
+.ProseMirror .tiptap-image-node__handle--se {
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+}
+
+body.is-resizing-image {
+    user-select: none;
 }
 
 /* Headings colors */
@@ -268,4 +373,21 @@
     padding: 6px 10px;
     text-decoration: none !important;
     flex: 0 0 auto;
+}
+
+.ProseMirror .dodohabit-install-btn,
+.prose .dodohabit-install-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(96, 165, 250, 0.45);
+    background: linear-gradient(120deg, rgba(37, 99, 235, 0.22), rgba(34, 211, 238, 0.16));
+    color: #dbeafe !important;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    padding: 0.45rem 0.95rem;
 }

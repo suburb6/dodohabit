@@ -20,8 +20,9 @@ const ImageSourceMenu = ({
             const rect = anchorRef.current.getBoundingClientRect();
             const menuWidth = 224;
             const viewportPadding = 8;
+            const centeredLeft = rect.left + rect.width / 2 - menuWidth / 2;
             const left = Math.min(
-                Math.max(viewportPadding, rect.right - menuWidth),
+                Math.max(viewportPadding, centeredLeft),
                 window.innerWidth - menuWidth - viewportPadding
             );
             const top = rect.bottom + 8;
@@ -42,8 +43,9 @@ const ImageSourceMenu = ({
     const menu = (
         <div
             className={`${portal ? 'fixed' : 'absolute right-0 top-full mt-2'} z-[120] w-56 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-2 ${className}`}
-            style={portal ? { top: position.top, left: position.left } : undefined}
+            style={portal ? { top: position.top, left: position.left, backgroundColor: 'var(--bg-secondary)', backdropFilter: 'blur(10px)' } : { backgroundColor: 'var(--bg-secondary)' }}
             onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
         >
             <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] px-2 pt-1 pb-2 flex items-center gap-2">
                 <ImageIcon size={12} />

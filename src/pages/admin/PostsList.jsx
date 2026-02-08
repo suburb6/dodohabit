@@ -5,9 +5,10 @@ import { Plus, Search, Edit, Trash2, ExternalLink } from 'lucide-react';
 import AdminHeader from '../../components/admin/AdminHeader';
 
 const PostsList = () => {
-    const { posts, deletePost } = useBlog();
+    const { posts, deletePost, updatePost } = useBlog();
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
     const filteredPosts = posts.filter(post => {
         const title = post.title || '';
@@ -19,6 +20,20 @@ const PostsList = () => {
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this post?')) {
             deletePost(id);
+        }
+    };
+
+    const handleToggleStatus = async (post) => {
+        if (!post?.id) return;
+        const nextStatus = post.status === 'published' ? 'draft' : 'published';
+        try {
+            setStatusUpdatingId(post.id);
+            await updatePost(post.id, { status: nextStatus });
+        } catch (error) {
+            console.error('Failed to update publish status:', error);
+            alert('Failed to update publish status. Please try again.');
+        } finally {
+            setStatusUpdatingId(null);
         }
     };
 
@@ -90,6 +105,19 @@ const PostsList = () => {
                                         </td>
                                         <td className="py-2.5 px-6 text-right">
                                             <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                    onClick={() => handleToggleStatus(post)}
+                                                    disabled={statusUpdatingId === post.id}
+                                                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors border ${post.status === 'published'
+                                                        ? 'text-amber-400 border-amber-400/30 hover:bg-amber-500/10'
+                                                        : 'text-green-400 border-green-400/30 hover:bg-green-500/10'
+                                                        } disabled:opacity-50`}
+                                                    title={post.status === 'published' ? 'Unpublish post' : 'Publish post'}
+                                                >
+                                                    {statusUpdatingId === post.id
+                                                        ? 'Updating...'
+                                                        : (post.status === 'published' ? 'Unpublish' : 'Publish')}
+                                                </button>
                                                 <Link to={`/blog/${post.slug}`} target="_blank" className="p-1.5 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] rounded-md hover:text-blue-500 transition-colors" title="View">
                                                     <ExternalLink size={16} />
                                                 </Link>

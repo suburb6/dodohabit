@@ -90,9 +90,9 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
 
     return (
         <div
-            className={`sticky z-30 transition-all duration-300
-                ${detached ? 'top-[4.5rem] mx-3 mt-2 rounded-xl border border-blue-500/20 bg-[var(--bg-secondary)]/95 backdrop-blur-xl shadow-[0_14px_40px_-18px_rgba(59,130,246,0.55)]'
-                    : 'top-[4.5rem] rounded-t-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]'}
+            className={`sticky z-[70] transition-all duration-300
+                ${detached ? 'top-[4.75rem] mx-3 mt-2 rounded-xl border border-blue-500/20 bg-[var(--bg-secondary)]/95 backdrop-blur-xl shadow-[0_14px_40px_-18px_rgba(59,130,246,0.55)]'
+                    : 'top-[4.75rem] rounded-t-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]'}
             `}
         >
             <div className="flex flex-wrap items-center gap-1 p-2 relative">
@@ -236,7 +236,7 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
                     onClose={() => setImageMenuOpen(false)}
                     onUploadFromComputer={addImageFromComputer}
                     onOpenLibrary={openImageLibrary}
-                    className="left-1/2 right-auto -translate-x-1/2 mt-1"
+                    className="left-1/2 right-auto -translate-x-1/2 mt-1.5"
                 />
             </div>
             <ToolbarButton
@@ -247,7 +247,7 @@ const EditorToolbar = ({ editor, addImageFromComputer, openImageLibrary, detache
             </ToolbarButton>
             <ToolbarButton
                 onClick={addAppPromoCard}
-                title="Insert DodoHabit Play Store card"
+                title="Insert Install button"
             >
                 <Smartphone size={18} />
             </ToolbarButton>

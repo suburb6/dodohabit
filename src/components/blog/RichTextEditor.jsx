@@ -10,6 +10,7 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import { NodeSelection } from '@tiptap/pm/state';
 import EditorToolbar from './EditorToolbar';
 import TocAnchor from './tiptap/TocAnchor';
 import EnhancedImage from './tiptap/EnhancedImage';
@@ -40,10 +41,12 @@ const RichTextEditor = ({
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [toolbarDetached, setToolbarDetached] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImagePos, setSelectedImagePos] = useState(null);
     const [placementMode, setPlacementMode] = useState(false);
     const [selectionMenu, setSelectionMenu] = useState(null);
     const [slashMenu, setSlashMenu] = useState(null);
     const toolbarSentinelRef = useRef(null);
+    const lastEmittedHtmlRef = useRef(content || '');
 
     const editor = useEditor({
         extensions: [
@@ -52,6 +55,8 @@ const RichTextEditor = ({
             TocAnchor,
             Table.configure({
                 resizable: true,
+                cellMinWidth: 120,
+                handleWidth: 7,
             }),
             TableRow,
             TableHeader,
@@ -71,7 +76,9 @@ const RichTextEditor = ({
         ],
         content,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML());
+            const html = editor.getHTML();
+            lastEmittedHtmlRef.current = html;
+            onChange(html);
         },
         editorProps: {
             attributes: {
@@ -82,13 +89,11 @@ const RichTextEditor = ({
 
     // Update editor content when prop key changes (async load fix)
     useEffect(() => {
-        if (editor && content !== editor.getHTML()) {
-            // Only update if significantly different to avoid cursor jumps
-            // Ideally we'd compare parsed JSON but HTML approx is okay for initial load
-            if (Math.abs(content.length - editor.getHTML().length) > 10 || content === '') {
-                editor.commands.setContent(content);
-            }
-        }
+        if (!editor) return;
+        const nextContent = content || '';
+        if (nextContent === editor.getHTML() || nextContent === lastEmittedHtmlRef.current) return;
+        editor.commands.setContent(nextContent, false);
+        lastEmittedHtmlRef.current = nextContent;
     }, [content, editor]);
 
     const fileInputRef = React.useRef(null);
@@ -121,11 +126,25 @@ const RichTextEditor = ({
         if (!editor) return undefined;
 
         const syncImageSelection = () => {
+            const { selection, doc } = editor.state;
+            if (selection instanceof NodeSelection && selection.node?.type?.name === 'image') {
+                setSelectedImage(selection.node.attrs || null);
+                setSelectedImagePos(selection.from);
+                return;
+            }
+            const nodeAtCursor = doc.nodeAt(selection.from);
+            if (nodeAtCursor?.type?.name === 'image') {
+                setSelectedImage(nodeAtCursor.attrs || null);
+                setSelectedImagePos(selection.from);
+                return;
+            }
             if (editor.isActive('image')) {
                 setSelectedImage(editor.getAttributes('image'));
-            } else {
-                setSelectedImage(null);
+                setSelectedImagePos(selection.from);
+                return;
             }
+            setSelectedImage(null);
+            setSelectedImagePos(null);
         };
 
         syncImageSelection();
@@ -140,6 +159,7 @@ const RichTextEditor = ({
     useEffect(() => {
         if (!selectedImage) {
             setPlacementMode(false);
+            setSelectedImagePos(null);
         }
     }, [selectedImage]);
 
@@ -212,24 +232,24 @@ const RichTextEditor = ({
         setPlacementMode(true);
     }, [editor]);
 
-    const addAppPromoCard = useCallback(() => {
+    const addInstallButton = useCallback(() => {
         if (!editor) return;
         editor.chain().focus().insertContent(`
-            <div class="dodohabit-app-card" contenteditable="false">
-                <div class="dodohabit-app-card__icon">D</div>
-                <div class="dodohabit-app-card__content">
-                    <div class="dodohabit-app-card__title">Get DodoHabit on Play Store</div>
-                    <div class="dodohabit-app-card__subtitle">Build habits that stick, one day at a time.</div>
-                </div>
-                <a class="dodohabit-app-card__cta" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a>
-            </div>
+            <p><a class="dodohabit-install-btn" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a></p>
             <p></p>
         `).run();
     }, [editor]);
 
     const addTableAtCursor = useCallback(() => {
         if (!editor) return;
-        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+        const rowValue = window.prompt('Rows (1-12)', '3');
+        if (rowValue === null) return;
+        const colValue = window.prompt('Columns (1-8)', '3');
+        if (colValue === null) return;
+        const rows = Math.min(12, Math.max(1, Number.parseInt(rowValue, 10) || 3));
+        const cols = Math.min(8, Math.max(1, Number.parseInt(colValue, 10) || 3));
+        const withHeaderRow = window.confirm('Add header row?');
+        editor.chain().focus().insertTable({ rows, cols, withHeaderRow }).run();
     }, [editor]);
 
     const addTocAtCursor = useCallback(() => {
@@ -307,7 +327,7 @@ const RichTextEditor = ({
             },
             {
                 id: 'table',
-                label: 'Table 3x3',
+                label: 'Table',
                 keywords: 'table grid rows columns',
                 run: addTableAtCursor,
             },
@@ -325,12 +345,12 @@ const RichTextEditor = ({
             },
             {
                 id: 'app',
-                label: 'DodoHabit App Card',
-                keywords: 'app playstore card cta',
-                run: addAppPromoCard,
+                label: 'Install Button',
+                keywords: 'install app playstore cta',
+                run: addInstallButton,
             },
         ];
-    }, [editor, addImageFromComputer, addTocAtCursor, addAppPromoCard, addTableAtCursor]);
+    }, [editor, addImageFromComputer, addTocAtCursor, addInstallButton, addTableAtCursor]);
 
     const filteredSlashCommands = React.useMemo(() => {
         if (!slashMenu) return [];
@@ -508,9 +528,23 @@ const RichTextEditor = ({
     const selectedImageWidth = Number.parseInt(String(selectedImage?.width || '100').replace('%', ''), 10) || 100;
 
     const updateSelectedImage = useCallback((attrs) => {
-        if (!editor || !editor.isActive('image')) return;
-        editor.chain().focus().updateAttributes('image', attrs).run();
-    }, [editor]);
+        if (!editor || selectedImagePos === null || selectedImagePos === undefined) return;
+        const { state, view } = editor;
+        const node = state.doc.nodeAt(selectedImagePos);
+        if (!node || node.type.name !== 'image') return;
+        const nextAttrs = { ...node.attrs, ...attrs };
+        const tr = state.tr.setNodeMarkup(selectedImagePos, undefined, nextAttrs);
+        view.dispatch(tr);
+        editor.chain().focus().setNodeSelection(selectedImagePos).run();
+        setSelectedImage(nextAttrs);
+    }, [editor, selectedImagePos]);
+
+    const removeSelectedImage = useCallback(() => {
+        if (!editor || selectedImagePos === null || selectedImagePos === undefined) return;
+        editor.chain().focus().setNodeSelection(selectedImagePos).deleteSelection().run();
+        setSelectedImage(null);
+        setSelectedImagePos(null);
+    }, [editor, selectedImagePos]);
 
     return (
         <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-xl relative overflow-visible">
@@ -521,7 +555,7 @@ const RichTextEditor = ({
                 openImageLibrary={openImageLibrary}
                 detached={toolbarDetached}
                 addTocAtCursor={addTocAtCursor}
-                addAppPromoCard={addAppPromoCard}
+                addAppPromoCard={addInstallButton}
                 addTableAtCursor={addTableAtCursor}
             />
             {editor && selectionMenu && (
@@ -565,12 +599,15 @@ const RichTextEditor = ({
 
             {selectedImage && (
                 <div className="sticky bottom-4 z-20 px-4 pb-4 pointer-events-none">
-                    <div className="ml-auto max-w-md rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-3 pointer-events-auto">
+                    <div
+                        className="ml-auto max-w-md rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-3 pointer-events-auto backdrop-blur-md"
+                        style={{ backgroundColor: 'var(--bg-secondary)' }}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Image Tools</span>
                             <button
                                 type="button"
-                                onClick={() => editor?.chain().focus().deleteSelection().run()}
+                                onClick={removeSelectedImage}
                                 className="p-1 rounded-md text-[var(--text-secondary)] hover:text-red-500 hover:bg-[var(--bg-primary)] transition-colors"
                                 title="Remove image"
                             >
@@ -591,7 +628,7 @@ const RichTextEditor = ({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        editor?.chain().focus().deleteSelection().run();
+                                        removeSelectedImage();
                                         setPlacementMode(false);
                                     }}
                                     className="px-2.5 py-1.5 rounded-md bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors inline-flex items-center gap-1"
@@ -602,6 +639,23 @@ const RichTextEditor = ({
                                 <span className="text-[10px] text-[var(--text-secondary)]">Adjust size + alignment, then confirm placement.</span>
                             </div>
                         )}
+
+                        <div className="grid grid-cols-1 gap-2 mb-3">
+                            <input
+                                type="text"
+                                value={selectedImage?.alt || ''}
+                                onChange={(event) => updateSelectedImage({ alt: event.target.value })}
+                                placeholder="Alt text (accessibility)"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+                            <input
+                                type="text"
+                                value={selectedImage?.title || ''}
+                                onChange={(event) => updateSelectedImage({ title: event.target.value })}
+                                placeholder="Caption / title"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+                        </div>
 
                         <div className="grid grid-cols-4 gap-1 mb-3">
                             {[40, 60, 80, 100].map((size) => (
@@ -677,6 +731,63 @@ const RichTextEditor = ({
                             >
                                 <ImageIcon size={12} />
                                 Library
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {editor?.isActive('table') && (
+                <div className="sticky bottom-4 z-20 px-4 pb-4 pointer-events-none">
+                    <div
+                        className="mr-auto max-w-xl rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-3 pointer-events-auto backdrop-blur-md"
+                        style={{ backgroundColor: 'var(--bg-secondary)' }}
+                    >
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
+                            Table Tools
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().addRowAfter().run()}
+                                className="px-2 py-1.5 text-xs rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                + Row
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                                className="px-2 py-1.5 text-xs rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                + Column
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+                                className="px-2 py-1.5 text-xs rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                Header
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().deleteRow().run()}
+                                className="px-2 py-1.5 text-xs rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                - Row
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().deleteColumn().run()}
+                                className="px-2 py-1.5 text-xs rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                - Column
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().deleteTable().run()}
+                                className="px-2 py-1.5 text-xs rounded-md bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                            >
+                                Remove
                             </button>
                         </div>
                     </div>

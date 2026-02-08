@@ -6,17 +6,59 @@ import RichTextEditor from '../../components/blog/RichTextEditor';
 import ImageUploader from '../../components/blog/ImageUploader';
 import MediaLibraryModal from '../../components/blog/MediaLibraryModal';
 import ImageSourceMenu from '../../components/blog/ImageSourceMenu';
-import { Save, Eye, List, X, EyeOff, ChevronDown, ChevronUp, Hash, Camera, Trash2 } from 'lucide-react';
+import { Save, Eye, List, X, EyeOff, ChevronDown, ChevronUp, Hash, Camera, Trash2, Navigation, History, RotateCcw, Cloud, Loader2 } from 'lucide-react';
 import AdminHeader from '../../components/admin/AdminHeader';
 import { useToast } from '../../contexts/ToastContext';
 
 const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const tocItemKey = (item) => `${item.type}-${item.sourceIndex}`;
+const slugifyForId = (value) =>
+    (value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+const htmlToPlainText = (value) => (value || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+const withStableTocIds = (html) => {
+    if (!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+
+    const used = new Set();
+    Array.from(div.querySelectorAll('span[data-toc-anchor="true"], h1, h2, h3')).forEach((el, sourceIndex) => {
+        const isAnchor = el.matches('span[data-toc-anchor="true"]');
+        const rawText = isAnchor
+            ? (el.getAttribute('data-toc-label') || el.textContent || '')
+            : (el.textContent || '');
+        const text = rawText.replace(/\s+/g, ' ').trim();
+
+        const fallbackId = `${isAnchor ? 'toc' : 'heading'}-${sourceIndex}-${slugifyForId(text) || 'section'}`;
+        const currentId = el.getAttribute('id') || el.getAttribute('data-toc-id') || fallbackId;
+        let uniqueId = currentId;
+        let suffix = 2;
+        while (used.has(uniqueId)) {
+            uniqueId = `${currentId}-${suffix}`;
+            suffix += 1;
+        }
+        used.add(uniqueId);
+
+        el.setAttribute('id', uniqueId);
+        if (isAnchor) {
+            el.setAttribute('data-toc-id', uniqueId);
+            el.setAttribute('data-toc-anchor', 'true');
+            if (text) el.setAttribute('data-toc-label', text);
+        }
+    });
+
+    return div.innerHTML;
+};
 
 const PostEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { posts, getPostById, createPost, updatePost, uploadImage, loading } = useBlog();
+    const { posts, getPostById, createPost, updatePost, uploadImage, loading, createPostHistory, getPostHistory } = useBlog();
     const toast = useToast();
     const isNew = !id;
     const [featuredUploading, setFeaturedUploading] = useState(false);
@@ -30,11 +72,20 @@ const PostEditor = () => {
     const [authorPhotoMenuOpen, setAuthorPhotoMenuOpen] = useState(false);
     const [authorPhotoLibraryOpen, setAuthorPhotoLibraryOpen] = useState(false);
     const [tocLabelDrafts, setTocLabelDrafts] = useState({});
+    const [tocEditingKey, setTocEditingKey] = useState(null);
+    const [historyEntries, setHistoryEntries] = useState([]);
+    const [cloudHistoryEntries, setCloudHistoryEntries] = useState([]);
+    const [historySyncing, setHistorySyncing] = useState(false);
+    const [historyPreview, setHistoryPreview] = useState(null);
     const savedRef = useRef(false);
     const pendingIdRef = useRef(null);
     const initializedPostIdRef = useRef(null);
     const authorPhotoInputRef = useRef(null);
     const authorPhotoMenuRef = useRef(null);
+    const historyHashRef = useRef('');
+    const restoreInProgressRef = useRef(false);
+    const historyDebounceRef = useRef(null);
+    const historyCloudDisabledRef = useRef(false);
 
     const [post, setPost] = useState({
         title: '',
@@ -54,6 +105,106 @@ const PostEditor = () => {
         tocHidden: []
     });
 
+    const makeHistorySnapshot = useCallback((value) => ({
+        title: value.title || '',
+        excerpt: value.excerpt || '',
+        content: value.content || '',
+        slug: value.slug || '',
+        featuredImage: value.featuredImage || null,
+        featuredImageCaption: value.featuredImageCaption || '',
+        featuredImageAlt: value.featuredImageAlt || '',
+        featuredImageCredit: value.featuredImageCredit || '',
+        authorName: value.authorName || '',
+        authorTitle: value.authorTitle || '',
+        authorImage: value.authorImage || null,
+        featuredBadges: Array.isArray(value.featuredBadges) ? value.featuredBadges.slice(0, 2) : [],
+        tocHidden: Array.isArray(value.tocHidden) ? value.tocHidden : [],
+    }), []);
+
+    const mapCloudHistoryEntry = useCallback((entry) => {
+        const snapshot = entry?.snapshot || {};
+        const plain = htmlToPlainText(snapshot.content || '');
+        return {
+            id: `cloud-${entry.id}`,
+            remoteId: entry.id,
+            source: 'cloud',
+            label: entry.label || 'Cloud snapshot',
+            createdAt: new Date(entry.createdAt || entry.updatedAt || Date.now()).toISOString(),
+            preview: plain.slice(0, 140),
+            snapshot,
+        };
+    }, []);
+
+    const pushHistorySnapshot = useCallback((label, sourcePost) => {
+        const snapshot = makeHistorySnapshot(sourcePost || post);
+        const hash = JSON.stringify(snapshot);
+        if (hash === historyHashRef.current) return;
+        historyHashRef.current = hash;
+        const plain = htmlToPlainText(snapshot.content);
+        setHistoryEntries((previous) => [
+            {
+                id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                source: 'local',
+                label: label || 'Auto snapshot',
+                createdAt: new Date().toISOString(),
+                preview: plain.slice(0, 140),
+                snapshot,
+            },
+            ...previous,
+        ].slice(0, 40));
+    }, [makeHistorySnapshot, post]);
+
+    const loadCloudHistory = useCallback(async (postId) => {
+        if (historyCloudDisabledRef.current) return;
+        if (!postId) {
+            setCloudHistoryEntries([]);
+            return;
+        }
+        try {
+            setHistorySyncing(true);
+            const entries = await getPostHistory(postId, 40);
+            setCloudHistoryEntries(entries.map(mapCloudHistoryEntry));
+        } catch (error) {
+            console.error('Failed to load cloud history:', error);
+            const errorText = String(error?.message || '').toLowerCase();
+            if (errorText.includes('permission') || errorText.includes('403') || errorText.includes('unauthorized')) {
+                historyCloudDisabledRef.current = true;
+                toast?.info?.('Cloud history requires Firestore history rules. Using local history for now.');
+            }
+        } finally {
+            setHistorySyncing(false);
+        }
+    }, [getPostHistory, mapCloudHistoryEntry, toast]);
+
+    const persistHistorySnapshot = useCallback(async (postId, label, sourcePost) => {
+        if (historyCloudDisabledRef.current) return;
+        if (!postId) return;
+        const snapshot = makeHistorySnapshot(sourcePost || post);
+        const summary = htmlToPlainText(snapshot.content).slice(0, 160);
+        try {
+            setHistorySyncing(true);
+            await createPostHistory(postId, snapshot, { label, summary, source: 'editor' });
+            const entries = await getPostHistory(postId, 40);
+            setCloudHistoryEntries(entries.map(mapCloudHistoryEntry));
+        } catch (error) {
+            console.error('Failed to persist history snapshot:', error);
+            const errorText = String(error?.message || '').toLowerCase();
+            if (errorText.includes('permission') || errorText.includes('403') || errorText.includes('unauthorized')) {
+                historyCloudDisabledRef.current = true;
+                toast?.info?.('Cloud history blocked by Firestore rules. Local history is still active.');
+                return;
+            }
+            toast?.error?.('Cloud history save failed. Local history still available.');
+        } finally {
+            setHistorySyncing(false);
+        }
+    }, [createPostHistory, getPostHistory, makeHistorySnapshot, mapCloudHistoryEntry, post, toast]);
+
+    const replacePostContent = useCallback((nextContent) => {
+        const normalized = withStableTocIds(nextContent || '');
+        setPost((prev) => (prev.content === normalized ? prev : { ...prev, content: normalized }));
+    }, []);
+
     useEffect(() => {
         if (loading) return;
         if (!isNew) {
@@ -64,10 +215,14 @@ const PostEditor = () => {
                 }
                 setPost({
                     ...existingPost,
+                    content: withStableTocIds(existingPost.content || ''),
                     featuredBadges: Array.isArray(existingPost.featuredBadges)
                         ? existingPost.featuredBadges.slice(0, 2)
                         : []
                 });
+                historyHashRef.current = '';
+                setHistoryEntries([]);
+                setHistoryPreview(null);
                 initializedPostIdRef.current = id;
                 if (pendingIdRef.current === id) {
                     pendingIdRef.current = null;
@@ -83,6 +238,14 @@ const PostEditor = () => {
     useEffect(() => {
         initializedPostIdRef.current = null;
     }, [id]);
+
+    useEffect(() => {
+        if (isNew || !id) {
+            setCloudHistoryEntries([]);
+            return;
+        }
+        loadCloudHistory(id);
+    }, [id, isNew, loadCloudHistory]);
 
     // Mark dirty on any post field change (skip initial load)
     const initialLoadDone = useRef(false);
@@ -156,9 +319,9 @@ const PostEditor = () => {
                 customLabels.add(normalized);
             }
 
-            const id = isAnchor
-                ? (el.getAttribute('id') || el.getAttribute('data-toc-id') || `toc-${sourceIndex}`)
-                : '';
+            const existingId = el.getAttribute('id') || el.getAttribute('data-toc-id');
+            const fallbackId = `${isAnchor ? 'toc' : 'heading'}-${sourceIndex}-${slugifyForId(text) || 'section'}`;
+            const id = existingId || fallbackId;
             const level = isAnchor
                 ? 'sub'
                 : el.tagName.toLowerCase();
@@ -181,16 +344,14 @@ const PostEditor = () => {
             return;
         }
         setTocLabelDrafts((drafts) => {
-            const next = { ...drafts };
+            const next = {};
             tocEntries.items.forEach((item) => {
                 const key = tocItemKey(item);
-                if (typeof next[key] !== 'string') {
-                    next[key] = item.text;
-                }
+                next[key] = tocEditingKey === key && typeof drafts[key] === 'string' ? drafts[key] : item.text;
             });
             return next;
         });
-    }, [tocEntries.items]);
+    }, [tocEntries.items, tocEditingKey]);
 
     const tocHiddenArr = useMemo(() => Array.isArray(post.tocHidden) ? post.tocHidden : [], [post.tocHidden]);
     const editorStats = useMemo(() => {
@@ -199,6 +360,47 @@ const PostEditor = () => {
         const read = readingTime(post.content || '');
         return { words, read: read.text || '0 min read' };
     }, [post.content]);
+
+    const mergedHistoryEntries = useMemo(() => {
+        const map = new Map();
+        [...cloudHistoryEntries, ...historyEntries].forEach((entry) => {
+            const key = `${entry.createdAt}-${entry.label}-${entry.preview}`;
+            if (!map.has(key)) map.set(key, entry);
+        });
+        return Array.from(map.values()).sort(
+            (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        );
+    }, [cloudHistoryEntries, historyEntries]);
+
+    useEffect(() => {
+        if (!initialLoadDone.current) return;
+        if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+        historyDebounceRef.current = setTimeout(() => {
+            if (restoreInProgressRef.current) {
+                restoreInProgressRef.current = false;
+                return;
+            }
+            pushHistorySnapshot('Auto snapshot');
+        }, 1200);
+        return () => {
+            if (historyDebounceRef.current) clearTimeout(historyDebounceRef.current);
+        };
+    }, [
+        post.title,
+        post.excerpt,
+        post.content,
+        post.slug,
+        post.authorName,
+        post.authorTitle,
+        post.authorImage,
+        post.featuredImage,
+        post.featuredImageCaption,
+        post.featuredImageAlt,
+        post.featuredImageCredit,
+        post.featuredBadges,
+        post.tocHidden,
+        pushHistorySnapshot,
+    ]);
 
     const unhideFromToc = useCallback((text) => {
         const normalized = normalizeLabel(text);
@@ -249,7 +451,7 @@ const PostEditor = () => {
                 normalizeLabel(entry) === normalizeLabel(previous) ? label : entry
             );
 
-            return { ...p, content: div.innerHTML, tocHidden: updatedHidden };
+            return { ...p, content: withStableTocIds(div.innerHTML), tocHidden: updatedHidden };
         });
 
         setTocLabelDrafts((drafts) => ({ ...drafts, [tocItemKey(item)]: label }));
@@ -265,8 +467,25 @@ const PostEditor = () => {
             if (!target || !target.matches('span[data-toc-anchor="true"]')) return p;
             const text = target.getAttribute('data-toc-label') || '';
             target.replaceWith(document.createTextNode(text));
-            return { ...p, content: div.innerHTML };
+            return { ...p, content: withStableTocIds(div.innerHTML) };
         });
+    }, []);
+
+    const scrollToTocEntry = useCallback((item) => {
+        const root = document.querySelector('.ProseMirror');
+        if (!root) return;
+
+        let target = null;
+        if (item.id) {
+            target = root.querySelector(`[id="${item.id.replace(/"/g, '\\"')}"]`);
+        }
+        if (!target) {
+            const nodes = Array.from(root.querySelectorAll('span[data-toc-anchor="true"], h1, h2, h3'));
+            target = nodes[item.sourceIndex] || null;
+        }
+        if (!target) return;
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, []);
 
     const featuredUploadIdRef = useRef(0);
@@ -430,6 +649,7 @@ const PostEditor = () => {
 
         const postToSave = {
             ...post,
+            content: withStableTocIds(post.content || ''),
             featuredBadges: badges,
             status,
             publishedAt: status === 'published' && !post.publishedAt ? now : post.publishedAt
@@ -455,6 +675,9 @@ const PostEditor = () => {
 
             const savePromise = isNew ? createPost(postToSave) : updatePost(id, postToSave);
             const result = await Promise.race([savePromise, timeoutPromise]);
+            pushHistorySnapshot(status === 'published' ? 'Published snapshot' : 'Draft snapshot', postToSave);
+            const savedPostId = isNew ? result : id;
+            await persistHistorySnapshot(savedPostId, status === 'published' ? 'Published snapshot' : 'Draft snapshot', postToSave);
 
             if (isNew && result) {
                 pendingIdRef.current = result;
@@ -479,6 +702,35 @@ const PostEditor = () => {
     const handlePreview = () => {
         localStorage.setItem('blog_preview_data', JSON.stringify(post));
         window.open('/blog/preview', '_blank', 'noopener,noreferrer');
+    };
+
+    const openHistoryPreview = (entry) => setHistoryPreview(entry);
+
+    const restoreFromHistory = async () => {
+        if (!historyPreview?.snapshot) return;
+        const checkpoint = makeHistorySnapshot(post);
+        pushHistorySnapshot('Before restore', post);
+        if (!isNew && id) {
+            await persistHistorySnapshot(id, 'Before restore', checkpoint);
+        }
+        restoreInProgressRef.current = true;
+        setPost((previous) => ({
+            ...previous,
+            ...historyPreview.snapshot,
+            content: withStableTocIds(historyPreview.snapshot.content || ''),
+        }));
+        setHistoryPreview(null);
+        toast?.success?.('Version restored.');
+    };
+
+    const handleManualCheckpoint = async () => {
+        const snapshot = makeHistorySnapshot(post);
+        pushHistorySnapshot('Manual checkpoint', post);
+        if (!isNew && id) {
+            await persistHistorySnapshot(id, 'Manual checkpoint', snapshot);
+            return;
+        }
+        toast?.info?.('Saved locally. Cloud history starts after first post save.');
     };
 
     const headerActions = (
@@ -568,7 +820,7 @@ const PostEditor = () => {
                         <div className="prose-container bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl overflow-visible shadow-soft">
                             <RichTextEditor
                                 content={post.content}
-                                onChange={(content) => setPost({ ...post, content })}
+                                onChange={replacePostContent}
                                 onImageUpload={handleBodyImageUpload}
                             />
                         </div>
@@ -582,8 +834,12 @@ const PostEditor = () => {
                     </div>
 
                     {/* Sidebar Settings */}
-                    <div className="space-y-4 xl:col-span-1 xl:self-stretch">
-                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft">
+                    <div className="xl:col-span-1">
+                        <div className="xl:sticky xl:top-[5.25rem] xl:h-[calc(100vh-6.25rem)] flex flex-col gap-4">
+                        <div
+                            data-lenis-prevent
+                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft xl:max-h-[58vh] overflow-y-auto thin-scrollbar"
+                        >
                             <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
                                 Post Settings
                             </h3>
@@ -685,15 +941,11 @@ const PostEditor = () => {
                             </div>
                         </div>
 
-                        <div className="sticky top-20 z-20 self-start">
-                            <div
-                                data-lenis-prevent
-                                className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft max-h-[calc(100vh-6.25rem)] overflow-y-auto thin-scrollbar"
-                            >
+                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-soft min-h-[250px] xl:flex-1 xl:min-h-0 flex flex-col">
                                 <button
                                     type="button"
                                     onClick={() => setTocOpen((v) => !v)}
-                                    className="flex items-center justify-between w-full text-left"
+                                    className="flex items-center justify-between w-full text-left shrink-0"
                                 >
                                     <span className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-sm">
                                         <List size={16} className="text-blue-500" />
@@ -711,7 +963,7 @@ const PostEditor = () => {
                                 </button>
 
                                 {tocOpen && (
-                                    <div className="mt-1 space-y-2">
+                                    <div className="mt-2 space-y-2 overflow-y-auto pr-1 thin-scrollbar">
                                         {tocEntries.items.length > 0 && tocEntries.items.map((item) => {
                                             const isHeading = item.type === 'heading';
                                             const isHidden = isHeading && tocHiddenArr.some((t) => normalizeLabel(t) === normalizeLabel(item.text));
@@ -722,6 +974,10 @@ const PostEditor = () => {
                                                 <div
                                                     key={key}
                                                     className={`flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2.5 py-2 group ${isHidden ? 'opacity-50' : ''} ${isSub ? 'ml-4 border-l-2 border-l-blue-400' : ''}`}
+                                                    onClick={(event) => {
+                                                        if (event.target.closest('input') || event.target.closest('button')) return;
+                                                        scrollToTocEntry(item);
+                                                    }}
                                                 >
                                                     {isHeading ? (
                                                         <Hash size={12} className={`shrink-0 ${item.level === 'h1' ? 'text-blue-500' : item.level === 'h2' ? 'text-blue-400' : 'text-blue-300'}`} />
@@ -730,14 +986,26 @@ const PostEditor = () => {
                                                     )}
                                                     <input
                                                         value={tocLabelDrafts[key] ?? item.text}
+                                                        onFocus={() => setTocEditingKey(key)}
                                                         onChange={(e) => setTocLabelDrafts((drafts) => ({ ...drafts, [key]: e.target.value }))}
-                                                        onBlur={(e) => renameTocEntry(item, e.target.value)}
+                                                        onBlur={(e) => {
+                                                            renameTocEntry(item, e.target.value);
+                                                            setTocEditingKey((current) => (current === key ? null : current));
+                                                        }}
                                                         className={`text-xs flex-1 bg-transparent focus:outline-none ${isHidden ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}
                                                         title="Edit TOC text"
                                                     />
                                                     {isHeading && (
                                                         <span className="text-[10px] text-[var(--text-secondary)] uppercase font-bold shrink-0">{item.level}</span>
                                                     )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => scrollToTocEntry(item)}
+                                                        className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-blue-400 transition-all"
+                                                        title="Jump to this section"
+                                                    >
+                                                        <Navigation size={12} />
+                                                    </button>
                                                     {isHeading ? (
                                                         isHidden ? (
                                                             <button
@@ -752,9 +1020,11 @@ const PostEditor = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const existing = Array.isArray(post.tocHidden) ? post.tocHidden : [];
-                                                                    if (existing.some((entry) => normalizeLabel(entry) === normalizeLabel(item.text))) return;
-                                                                    setPost({ ...post, tocHidden: [...existing, item.text] });
+                                                                    setPost((current) => {
+                                                                        const existing = Array.isArray(current.tocHidden) ? current.tocHidden : [];
+                                                                        if (existing.some((entry) => normalizeLabel(entry) === normalizeLabel(item.text))) return current;
+                                                                        return { ...current, tocHidden: [...existing, item.text] };
+                                                                    });
                                                                 }}
                                                                 className="opacity-0 group-hover:opacity-100 text-[var(--text-secondary)] hover:text-yellow-400 transition-all"
                                                                 title="Hide from TOC"
@@ -782,6 +1052,59 @@ const PostEditor = () => {
                                     </div>
                                 )}
                             </div>
+
+                            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-soft min-h-[180px] xl:max-h-[34vh] overflow-y-auto thin-scrollbar">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-sm">
+                                        <History size={15} className="text-blue-400" />
+                                        Change History
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={handleManualCheckpoint}
+                                        className="text-[10px] px-2 py-1 rounded-md border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                                    >
+                                        Save Point
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-2 mb-2 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+                                    <Cloud size={11} className="text-blue-400" />
+                                    <span>Cloud history</span>
+                                    {historySyncing && <Loader2 size={11} className="animate-spin text-blue-400" />}
+                                </div>
+                                {mergedHistoryEntries.length === 0 ? (
+                                    <p className="text-xs text-[var(--text-secondary)] italic">Snapshots appear while you edit. Cloud snapshots are saved on manual checkpoints and post saves.</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {mergedHistoryEntries.slice(0, 14).map((entry) => (
+                                            <button
+                                                key={entry.id}
+                                                type="button"
+                                                onClick={() => openHistoryPreview(entry)}
+                                                className="w-full text-left rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 hover:border-blue-500/45 transition-colors"
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-xs font-semibold text-[var(--text-primary)] truncate">{entry.label}</span>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${entry.source === 'cloud'
+                                                            ? 'text-blue-300 border-blue-400/30 bg-blue-500/10'
+                                                            : 'text-[var(--text-secondary)] border-[var(--border-color)] bg-[var(--bg-secondary)]'
+                                                            }`}>
+                                                            {entry.source === 'cloud' ? 'Cloud' : 'Local'}
+                                                        </span>
+                                                        <span className="text-[10px] text-[var(--text-secondary)]">
+                                                            {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {entry.preview && (
+                                                    <p className="mt-1 text-[10px] text-[var(--text-secondary)] line-clamp-2">{entry.preview}</p>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div >
@@ -792,6 +1115,57 @@ const PostEditor = () => {
                 onClose={() => setAuthorPhotoLibraryOpen(false)}
                 onSelect={handleAuthorImageChange}
             />
+
+            {historyPreview && (
+                <div className="fixed inset-0 z-[130] bg-black/75 backdrop-blur-sm p-4 flex items-center justify-center">
+                    <div className="w-full max-w-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl p-5 space-y-4">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)]">Preview Restore Point</h3>
+                                <p className="text-xs text-[var(--text-secondary)]">
+                                    {historyPreview.label} • {new Date(historyPreview.createdAt).toLocaleString()}
+                                </p>
+                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">
+                                    Source: {historyPreview.source === 'cloud' ? 'Cloud history' : 'Local session'}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setHistoryPreview(null)}
+                                className="p-2 rounded-lg hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] p-3 space-y-2">
+                            <p className="text-sm text-[var(--text-primary)] font-semibold">{historyPreview.snapshot.title || 'Untitled post'}</p>
+                            {historyPreview.snapshot.excerpt && (
+                                <p className="text-xs text-[var(--text-secondary)]">{historyPreview.snapshot.excerpt}</p>
+                            )}
+                            <p className="text-xs text-[var(--text-secondary)]">
+                                {htmlToPlainText(historyPreview.snapshot.content).slice(0, 280) || 'No content in this snapshot.'}
+                            </p>
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setHistoryPreview(null)}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={restoreFromHistory}
+                                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm inline-flex items-center gap-2"
+                            >
+                                <RotateCcw size={14} />
+                                Restore This Version
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

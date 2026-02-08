@@ -1,5 +1,7 @@
 import Image from '@tiptap/extension-image';
 import { mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import ResizableImageView from './ResizableImageView';
 
 const sanitizeWidth = (value) => {
     const number = Number.parseInt(String(value || '').replace('%', ''), 10);
@@ -39,6 +41,10 @@ const EnhancedImage = Image.extend({
         const style = `width:${width};display:block;max-width:100%;${resolveAlignStyle(align)}`;
 
         return ['img', mergeAttributes(HTMLAttributes, { style })];
+    },
+
+    addNodeView() {
+        return ReactNodeViewRenderer(ResizableImageView);
     },
 });
 

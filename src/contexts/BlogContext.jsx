@@ -323,6 +323,38 @@ export const BlogProvider = ({ children }) => {
         }
     };
 
+    const createPostHistory = async (postId, snapshot, options = {}) => {
+        if (!postId || !snapshot) return null;
+        try {
+            const payload = {
+                postId,
+                label: options.label || 'Snapshot',
+                source: options.source || 'editor',
+                summary: options.summary || '',
+                snapshot,
+                createdBy: user?.email || auth?.currentUser?.email || null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            return await restAddDoc(`posts/${postId}/history`, payload);
+        } catch (error) {
+            console.error("Error creating post history:", error);
+            throw error;
+        }
+    };
+
+    const getPostHistory = async (postId, limit = 40) => {
+        if (!postId) return [];
+        try {
+            const entries = await restGetDocs(`posts/${postId}/history`);
+            entries.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+            return entries.slice(0, limit);
+        } catch (error) {
+            console.error("Error fetching post history:", error);
+            throw error;
+        }
+    };
+
     const testFirestore = async () => {
         console.log("--- FIRESTORE DIAGNOSTIC START ---");
         console.log("Time:", new Date().toISOString());
@@ -429,6 +461,8 @@ export const BlogProvider = ({ children }) => {
             media,
             deleteMedia,
             updateMedia,
+            createPostHistory,
+            getPostHistory,
             feedback,
             submitFeedback,
             updateFeedback,

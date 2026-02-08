@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useBlog } from '../../contexts/BlogContext';
 import { useAuth } from '../../contexts/AuthContext'; // Assuming this path for AuthContext
@@ -6,9 +6,10 @@ import { FileText, Eye, Clock, Plus, Database, MessageSquare } from 'lucide-reac
 import AdminHeader from '../../components/admin/AdminHeader';
 
 const AdminDashboard = () => {
-    const { posts, media, feedback, testFirestore } = useBlog();
+    const { posts, media, feedback, testFirestore, updatePost } = useBlog();
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
     const handleTest = async () => {
         const ok = await testFirestore();
@@ -19,6 +20,20 @@ const AdminDashboard = () => {
     const draftCount = posts.filter(p => p.status === 'draft').length;
     const feedbackCount = (feedback || []).filter((item) => (item.status || 'new') === 'new').length;
     const totalViews = "--"; // TODO: Implement view tracking
+
+    const handleToggleStatus = async (post) => {
+        if (!post?.id) return;
+        const nextStatus = post.status === 'published' ? 'draft' : 'published';
+        try {
+            setStatusUpdatingId(post.id);
+            await updatePost(post.id, { status: nextStatus });
+        } catch (error) {
+            console.error('Failed to update post status:', error);
+            alert('Failed to update publish status. Please try again.');
+        } finally {
+            setStatusUpdatingId(null);
+        }
+    };
 
     const StatCard = ({ title, value, icon: Icon, color }) => (
         <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 flex items-center justify-between shadow-soft">
@@ -109,7 +124,21 @@ const AdminDashboard = () => {
                                             {new Date(post.updatedAt).toLocaleDateString()}
                                         </td>
                                         <td className="py-2.5 text-right pr-2">
-                                            <Link to={`/admin/posts/${post.id}/edit`} className="text-blue-600 hover:text-blue-700 text-xs font-bold transition-colors">Edit</Link>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleToggleStatus(post)}
+                                                    disabled={statusUpdatingId === post.id}
+                                                    className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors border ${post.status === 'published'
+                                                        ? 'text-amber-400 border-amber-400/30 hover:bg-amber-500/10'
+                                                        : 'text-green-400 border-green-400/30 hover:bg-green-500/10'
+                                                        } disabled:opacity-50`}
+                                                >
+                                                    {statusUpdatingId === post.id
+                                                        ? 'Updating...'
+                                                        : (post.status === 'published' ? 'Unpublish' : 'Publish')}
+                                                </button>
+                                                <Link to={`/admin/posts/${post.id}/edit`} className="text-blue-600 hover:text-blue-700 text-xs font-bold transition-colors">Edit</Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
