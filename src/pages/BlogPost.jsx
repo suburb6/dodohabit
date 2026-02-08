@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlog } from '../contexts/BlogContext';
 import ShareButtons from '../components/blog/ShareButtons';
@@ -16,6 +16,11 @@ const slugifyForId = (value) =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+const getReadingAnchorLine = () => {
+    const viewportHeight = window.innerHeight || 0;
+    return Math.round(Math.min(220, Math.max(104, viewportHeight * 0.28)));
+};
+
 const BlogPost = () => {
     const { slug } = useParams();
     const { getPost, loading } = useBlog();
@@ -24,6 +29,8 @@ const BlogPost = () => {
     const [toc, setToc] = useState([]);
     const [processedContent, setProcessedContent] = useState('');
     const [activeId, setActiveId] = useState(null);
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const articleRef = useRef(null);
 
     useEffect(() => {
         if (post?.content) {
@@ -104,35 +111,62 @@ const BlogPost = () => {
     }, [post]);
 
     useEffect(() => {
-        if (!toc.length) return;
+        if (!toc.length) return undefined;
 
-        const nodes = toc
-            .map((item) => document.getElementById(item.id))
-            .filter(Boolean);
+        let rafId = null;
 
-        if (!nodes.length) return;
+        const updateScrollUi = () => {
+            const anchorLine = getReadingAnchorLine();
+            let nextActive = toc[0]?.id || null;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries
-                    .filter((e) => e.isIntersecting)
-                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-
-                if (visible[0]?.target?.id) {
-                    setActiveId(visible[0].target.id);
+            for (const item of toc) {
+                const node = document.getElementById(item.id);
+                if (!node) continue;
+                if (node.getBoundingClientRect().top <= anchorLine) {
+                    nextActive = item.id;
+                } else {
+                    break;
                 }
-            },
-            {
-                root: null,
-                // Account for sticky header + scroll-mt-32
-                rootMargin: '-120px 0px -70% 0px',
-                threshold: [0, 0.1, 1],
             }
-        );
 
-        nodes.forEach((n) => observer.observe(n));
-        return () => observer.disconnect();
+            setActiveId((prev) => (prev === nextActive ? prev : nextActive));
+
+            if (articleRef.current) {
+                const rect = articleRef.current.getBoundingClientRect();
+                const articleTop = window.scrollY + rect.top;
+                const articleBottom = articleTop + articleRef.current.offsetHeight;
+                const marker = window.scrollY + anchorLine;
+                const denominator = Math.max(1, articleBottom - articleTop);
+                const progress = Math.min(1, Math.max(0, (marker - articleTop) / denominator));
+                setScrollProgress((prev) => (Math.abs(prev - progress) < 0.002 ? prev : progress));
+            }
+
+            rafId = null;
+        };
+
+        const onScrollOrResize = () => {
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(updateScrollUi);
+        };
+
+        updateScrollUi();
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize);
+        return () => {
+            if (rafId !== null) cancelAnimationFrame(rafId);
+            window.removeEventListener('scroll', onScrollOrResize);
+            window.removeEventListener('resize', onScrollOrResize);
+        };
     }, [toc, processedContent]);
+
+    const navigateToSection = useCallback((id) => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        const anchorLine = getReadingAnchorLine();
+        const y = window.scrollY + node.getBoundingClientRect().top - anchorLine;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        setActiveId(id);
+    }, []);
 
     if (loading) {
         return <div className="min-h-screen pt-32 text-center text-[var(--text-primary)]">Loading...</div>;
@@ -171,13 +205,19 @@ const BlogPost = () => {
     const showUpdated = updatedAt && publishedAt && new Date(updatedAt).toDateString() !== new Date(publishedAt).toDateString();
 
     return (
-        <article className="min-h-screen pt-32 pb-20">
+        <article ref={articleRef} className="min-h-screen pt-32 pb-20">
             <SEO
                 title={post.title}
                 description={metaDescription}
                 image={post.featuredImage}
                 type="article"
             />
+            <div className="fixed top-0 left-0 right-0 z-[95] h-1 bg-blue-500/15 pointer-events-none">
+                <div
+                    className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-300 transition-[width] duration-150"
+                    style={{ width: `${Math.max(0, Math.min(100, scrollProgress * 100))}%` }}
+                />
+            </div>
             {/* Header */}
             {/* Header */}
             <header className="max-w-4xl mx-auto px-4 md:px-8 mb-16 text-center pt-8">
@@ -283,10 +323,7 @@ const BlogPost = () => {
                             <TocNav
                                 items={toc}
                                 activeId={activeId}
-                                onNavigate={(id) => {
-                                    setActiveId(id);
-                                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-                                }}
+                                onNavigate={navigateToSection}
                             />
                         ) : (
                             <p className="text-sm text-gray-600 italic">No sections found</p>

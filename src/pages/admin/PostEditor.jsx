@@ -516,7 +516,7 @@ const PostEditor = () => {
             />
 
             <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-6 w-full">
-                <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start">
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
                     {/* Main Editor */}
                     <div className="xl:col-span-3 space-y-6">
                         <input
@@ -582,7 +582,7 @@ const PostEditor = () => {
                     </div>
 
                     {/* Sidebar Settings */}
-                    <div className="space-y-4 xl:col-span-1">
+                    <div className="space-y-4 xl:col-span-1 xl:self-stretch">
                         <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 space-y-4 shadow-soft">
                             <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2 text-base">
                                 Post Settings
