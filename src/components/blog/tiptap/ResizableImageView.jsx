@@ -9,7 +9,7 @@ const toPercent = (value) => {
     return clamp(parsed, 20, 100);
 };
 
-const ResizableImageView = ({ node, selected, updateAttributes, editor, getPos }) => {
+const ResizableImageView = ({ node, selected, updateAttributes, editor }) => {
     const rafRef = useRef(null);
     const pendingWidthRef = useRef(null);
 
@@ -67,12 +67,6 @@ const ResizableImageView = ({ node, selected, updateAttributes, editor, getPos }
             if (rafRef.current !== null) {
                 cancelAnimationFrame(rafRef.current);
                 flushWidth();
-            }
-            const position = typeof getPos === 'function' ? getPos() : null;
-            if (typeof position === 'number') {
-                editor.chain().focus().setNodeSelection(position).run();
-            } else {
-                editor.chain().focus().run();
             }
         };
 

@@ -71,6 +71,46 @@
     font-weight: 700;
 }
 
+.ProseMirror table[data-design="zebra"] tbody tr:nth-child(odd) td,
+.prose table[data-design="zebra"] tbody tr:nth-child(odd) td {
+    background: color-mix(in srgb, var(--bg-secondary) 80%, #2563eb 8%);
+}
+
+.ProseMirror table[data-design="minimal"],
+.prose table[data-design="minimal"] {
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+}
+
+.ProseMirror table[data-design="minimal"] th,
+.ProseMirror table[data-design="minimal"] td,
+.prose table[data-design="minimal"] th,
+.prose table[data-design="minimal"] td {
+    border-color: color-mix(in srgb, var(--border-color) 55%, transparent);
+    background: transparent;
+}
+
+.ProseMirror table[data-design="minimal"] th,
+.prose table[data-design="minimal"] th {
+    background: color-mix(in srgb, var(--bg-secondary) 35%, transparent);
+}
+
+.ProseMirror table[data-design="accent"],
+.prose table[data-design="accent"] {
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15) inset;
+}
+
+.ProseMirror table[data-design="accent"] th,
+.prose table[data-design="accent"] th {
+    background: linear-gradient(120deg, rgba(37, 99, 235, 0.28), rgba(34, 211, 238, 0.16));
+    color: #dbeafe;
+}
+
+.ProseMirror table[data-design="accent"] td,
+.prose table[data-design="accent"] td {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
 .ProseMirror .tableWrapper {
     margin: 1.25rem 0;
     overflow-x: auto;

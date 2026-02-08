@@ -31,6 +31,26 @@ const getAutoTocLabel = (text, maxWords = 6) => {
     return `${words.slice(0, maxWords).join(' ')}...`;
 };
 
+const StyledTable = Table.extend({
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            design: {
+                default: 'classic',
+                parseHTML: (element) => element.getAttribute('data-design') || 'classic',
+                renderHTML: (attributes) => ({ 'data-design': attributes.design || 'classic' }),
+            },
+        };
+    },
+});
+
+const TABLE_DESIGNS = [
+    { id: 'classic', name: 'Classic', hint: 'Balanced borders + clean header' },
+    { id: 'zebra', name: 'Zebra', hint: 'Alternating row background stripes' },
+    { id: 'minimal', name: 'Minimal', hint: 'Light separators, airy look' },
+    { id: 'accent', name: 'Accent', hint: 'Blue-tinted highlight style' },
+];
+
 const RichTextEditor = ({
     content,
     onChange,
@@ -45,15 +65,21 @@ const RichTextEditor = ({
     const [placementMode, setPlacementMode] = useState(false);
     const [selectionMenu, setSelectionMenu] = useState(null);
     const [slashMenu, setSlashMenu] = useState(null);
+    const [tableBuilderOpen, setTableBuilderOpen] = useState(false);
+    const [tableRowsDraft, setTableRowsDraft] = useState('3');
+    const [tableColsDraft, setTableColsDraft] = useState('3');
+    const [tableHeaderRow, setTableHeaderRow] = useState(true);
+    const [tableDesign, setTableDesign] = useState('classic');
     const toolbarSentinelRef = useRef(null);
     const lastEmittedHtmlRef = useRef(content || '');
+    const pendingInsertSelectionRef = useRef(null);
 
     const editor = useEditor({
         extensions: [
             StarterKit,
             Underline,
             TocAnchor,
-            Table.configure({
+            StyledTable.configure({
                 resizable: true,
                 cellMinWidth: 120,
                 handleWidth: 7,
@@ -95,6 +121,23 @@ const RichTextEditor = ({
         editor.commands.setContent(nextContent, false);
         lastEmittedHtmlRef.current = nextContent;
     }, [content, editor]);
+
+    const captureSelectionForInsert = useCallback(() => {
+        if (!editor) return;
+        const { from, to } = editor.state.selection;
+        pendingInsertSelectionRef.current = { from, to };
+    }, [editor]);
+
+    const restoreSelectionForInsert = useCallback(() => {
+        if (!editor) return;
+        const range = pendingInsertSelectionRef.current;
+        if (!range) return;
+        const docSize = editor.state.doc.content.size;
+        const from = Math.max(1, Math.min(range.from, docSize));
+        const to = Math.max(from, Math.min(range.to, docSize));
+        editor.chain().focus().setTextSelection({ from, to }).run();
+        pendingInsertSelectionRef.current = null;
+    }, [editor]);
 
     const fileInputRef = React.useRef(null);
 
@@ -195,6 +238,7 @@ const RichTextEditor = ({
         if (file && onImageUpload) {
             const url = await onImageUpload(file);
             if (url) {
+                restoreSelectionForInsert();
                 editor.chain().focus().setImage({ src: url, width: '60%', align: 'center' }).run();
                 setPlacementMode(true);
             }
@@ -205,23 +249,27 @@ const RichTextEditor = ({
 
     const addImageFromComputer = useCallback(() => {
         if (onImageUpload && fileInputRef.current) {
+            captureSelectionForInsert();
             fileInputRef.current.click();
         } else {
             // Fallback to URL prompt if no upload handler
             const url = window.prompt('URL');
             if (url) {
+                restoreSelectionForInsert();
                 editor.chain().focus().setImage({ src: url, width: '60%', align: 'center' }).run();
                 setPlacementMode(true);
             }
         }
-    }, [editor, onImageUpload]);
+    }, [captureSelectionForInsert, editor, onImageUpload, restoreSelectionForInsert]);
 
     const openImageLibrary = useCallback(() => {
+        captureSelectionForInsert();
         setIsLibraryOpen(true);
-    }, []);
+    }, [captureSelectionForInsert]);
 
     const onLibraryImageSelect = useCallback((mediaItem) => {
         if (!mediaItem?.url || !editor) return;
+        restoreSelectionForInsert();
         editor.chain().focus().setImage({
             src: mediaItem.url,
             width: '60%',
@@ -230,7 +278,7 @@ const RichTextEditor = ({
             title: mediaItem.caption || mediaItem.title || '',
         }).run();
         setPlacementMode(true);
-    }, [editor]);
+    }, [editor, restoreSelectionForInsert]);
 
     const addInstallButton = useCallback(() => {
         if (!editor) return;
@@ -240,17 +288,35 @@ const RichTextEditor = ({
         `).run();
     }, [editor]);
 
+    const openTableBuilder = useCallback(() => {
+        setTableRowsDraft('3');
+        setTableColsDraft('3');
+        setTableHeaderRow(true);
+        setTableDesign('classic');
+        setTableBuilderOpen(true);
+    }, []);
+
+    const closeTableBuilder = useCallback(() => {
+        setTableBuilderOpen(false);
+    }, []);
+
     const addTableAtCursor = useCallback(() => {
+        openTableBuilder();
+    }, [openTableBuilder]);
+
+    const insertConfiguredTable = useCallback(() => {
         if (!editor) return;
-        const rowValue = window.prompt('Rows (1-12)', '3');
-        if (rowValue === null) return;
-        const colValue = window.prompt('Columns (1-8)', '3');
-        if (colValue === null) return;
-        const rows = Math.min(12, Math.max(1, Number.parseInt(rowValue, 10) || 3));
-        const cols = Math.min(8, Math.max(1, Number.parseInt(colValue, 10) || 3));
-        const withHeaderRow = window.confirm('Add header row?');
-        editor.chain().focus().insertTable({ rows, cols, withHeaderRow }).run();
-    }, [editor]);
+        const rows = Math.min(12, Math.max(1, Number.parseInt(tableRowsDraft, 10) || 3));
+        const cols = Math.min(8, Math.max(1, Number.parseInt(tableColsDraft, 10) || 3));
+        const design = TABLE_DESIGNS.some((item) => item.id === tableDesign) ? tableDesign : 'classic';
+        editor
+            .chain()
+            .focus()
+            .insertTable({ rows, cols, withHeaderRow: tableHeaderRow })
+            .updateAttributes('table', { design })
+            .run();
+        setTableBuilderOpen(false);
+    }, [editor, tableColsDraft, tableDesign, tableHeaderRow, tableRowsDraft]);
 
     const addTocAtCursor = useCallback(() => {
         if (!editor) return;
@@ -327,8 +393,8 @@ const RichTextEditor = ({
             },
             {
                 id: 'table',
-                label: 'Table',
-                keywords: 'table grid rows columns',
+                label: 'Table Builder',
+                keywords: 'table grid rows columns design',
                 run: addTableAtCursor,
             },
             {
@@ -409,6 +475,17 @@ const RichTextEditor = ({
             window.removeEventListener('mousedown', onMouseDown);
         };
     }, [slashMenu, closeSlashMenu]);
+
+    useEffect(() => {
+        if (!tableBuilderOpen) return undefined;
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                closeTableBuilder();
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [tableBuilderOpen, closeTableBuilder]);
 
     useEffect(() => {
         if (!tocMenu) return;
@@ -526,6 +603,9 @@ const RichTextEditor = ({
     }, [editor, tocMenu, closeTocMenu]);
 
     const selectedImageWidth = Number.parseInt(String(selectedImage?.width || '100').replace('%', ''), 10) || 100;
+    const activeTableDesign = editor?.isActive('table')
+        ? (editor.getAttributes('table')?.design || 'classic')
+        : 'classic';
 
     const updateSelectedImage = useCallback((attrs) => {
         if (!editor || selectedImagePos === null || selectedImagePos === undefined) return;
@@ -535,13 +615,16 @@ const RichTextEditor = ({
         const nextAttrs = { ...node.attrs, ...attrs };
         const tr = state.tr.setNodeMarkup(selectedImagePos, undefined, nextAttrs);
         view.dispatch(tr);
-        editor.chain().focus().setNodeSelection(selectedImagePos).run();
         setSelectedImage(nextAttrs);
     }, [editor, selectedImagePos]);
 
     const removeSelectedImage = useCallback(() => {
         if (!editor || selectedImagePos === null || selectedImagePos === undefined) return;
-        editor.chain().focus().setNodeSelection(selectedImagePos).deleteSelection().run();
+        const { state, view } = editor;
+        const node = state.doc.nodeAt(selectedImagePos);
+        if (!node || node.type.name !== 'image') return;
+        const tr = state.tr.deleteRange(selectedImagePos, selectedImagePos + node.nodeSize);
+        view.dispatch(tr);
         setSelectedImage(null);
         setSelectedImagePos(null);
     }, [editor, selectedImagePos]);
@@ -645,6 +728,12 @@ const RichTextEditor = ({
                                 type="text"
                                 value={selectedImage?.alt || ''}
                                 onChange={(event) => updateSelectedImage({ alt: event.target.value })}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                    }
+                                }}
                                 placeholder="Alt text (accessibility)"
                                 className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
                             />
@@ -652,6 +741,12 @@ const RichTextEditor = ({
                                 type="text"
                                 value={selectedImage?.title || ''}
                                 onChange={(event) => updateSelectedImage({ title: event.target.value })}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                    }
+                                }}
                                 placeholder="Caption / title"
                                 className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
                             />
@@ -743,8 +838,15 @@ const RichTextEditor = ({
                         className="mr-auto max-w-xl rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-3 pointer-events-auto backdrop-blur-md"
                         style={{ backgroundColor: 'var(--bg-secondary)' }}
                     >
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">
-                            Table Tools
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2 flex items-center justify-between">
+                            <span>Table Tools</span>
+                            <button
+                                type="button"
+                                onClick={openTableBuilder}
+                                className="px-2 py-1 rounded-md border border-[var(--border-color)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                New
+                            </button>
                         </div>
                         <div className="grid grid-cols-3 gap-1.5">
                             <button
@@ -788,6 +890,123 @@ const RichTextEditor = ({
                                 className="px-2 py-1.5 text-xs rounded-md bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
                             >
                                 Remove
+                            </button>
+                        </div>
+                        <div className="mt-2.5 grid grid-cols-4 gap-1.5">
+                            {TABLE_DESIGNS.map((design) => (
+                                <button
+                                    key={design.id}
+                                    type="button"
+                                    onClick={() => editor.chain().focus().updateAttributes('table', { design: design.id }).run()}
+                                    className={`px-2 py-1.5 text-[10px] rounded-md border transition-colors ${activeTableDesign === design.id
+                                        ? 'bg-blue-600 text-white border-blue-500'
+                                        : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                                        }`}
+                                    title={design.hint}
+                                >
+                                    {design.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {tableBuilderOpen && (
+                <div
+                    className="fixed inset-0 z-[90] bg-black/65 backdrop-blur-sm flex items-center justify-center p-4"
+                    onMouseDown={closeTableBuilder}
+                >
+                    <div
+                        className="w-full max-w-lg rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl p-4"
+                        style={{ backgroundColor: 'var(--bg-secondary)' }}
+                        onMouseDown={(event) => event.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 className="text-sm font-bold text-[var(--text-primary)]">Create Table</h3>
+                                <p className="text-[11px] text-[var(--text-secondary)]">Pick rows, columns, and a design in one step.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={closeTableBuilder}
+                                className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <label className="block">
+                                <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">Rows</span>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={12}
+                                    value={tableRowsDraft}
+                                    onChange={(event) => setTableRowsDraft(event.target.value)}
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </label>
+                            <label className="block">
+                                <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1.5">Columns</span>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={8}
+                                    value={tableColsDraft}
+                                    onChange={(event) => setTableColsDraft(event.target.value)}
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </label>
+                        </div>
+
+                        <label className="inline-flex items-center gap-2 mb-3 text-xs text-[var(--text-secondary)]">
+                            <input
+                                type="checkbox"
+                                checked={tableHeaderRow}
+                                onChange={(event) => setTableHeaderRow(event.target.checked)}
+                                className="accent-blue-600"
+                            />
+                            Start with header row
+                        </label>
+
+                        <div className="mb-4">
+                            <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-2">Design</span>
+                            <div className="grid grid-cols-2 gap-2">
+                                {TABLE_DESIGNS.map((design) => (
+                                    <button
+                                        key={design.id}
+                                        type="button"
+                                        onClick={() => setTableDesign(design.id)}
+                                        className={`text-left rounded-lg border px-3 py-2 transition-colors ${tableDesign === design.id
+                                            ? 'border-blue-500 bg-blue-500/10'
+                                            : 'border-[var(--border-color)] hover:border-blue-400/60 hover:bg-[var(--bg-primary)]'
+                                            }`}
+                                    >
+                                        <div className={`text-xs font-semibold ${tableDesign === design.id ? 'text-blue-300' : 'text-[var(--text-primary)]'}`}>
+                                            {design.name}
+                                        </div>
+                                        <div className="text-[10px] text-[var(--text-secondary)] mt-0.5">{design.hint}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={closeTableBuilder}
+                                className="px-3 py-2 rounded-md border border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={insertConfiguredTable}
+                                className="px-3 py-2 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                            >
+                                Insert Table
                             </button>
                         </div>
                     </div>

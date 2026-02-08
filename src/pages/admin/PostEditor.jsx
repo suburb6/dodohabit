@@ -201,8 +201,8 @@ const PostEditor = () => {
     }, [createPostHistory, getPostHistory, makeHistorySnapshot, mapCloudHistoryEntry, post, toast]);
 
     const replacePostContent = useCallback((nextContent) => {
-        const normalized = withStableTocIds(nextContent || '');
-        setPost((prev) => (prev.content === normalized ? prev : { ...prev, content: normalized }));
+        const value = nextContent || '';
+        setPost((prev) => (prev.content === value ? prev : { ...prev, content: value }));
     }, []);
 
     useEffect(() => {
