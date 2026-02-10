@@ -1,4 +1,11 @@
 {
+    "redirects": [
+        {
+            "source": "/support",
+            "destination": "/feedback",
+            "permanent": true
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",

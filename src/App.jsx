@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BlogProvider } from './contexts/BlogContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -103,6 +103,7 @@ const App = () => {
                                                     <Route path="/blog/:slug" element={<BlogPost />} />
                                                     <Route path="/privacy" element={<Privacy />} />
                                                     <Route path="/terms" element={<Terms />} />
+                                                    <Route path="/support" element={<Navigate to="/feedback" replace />} />
                                                     <Route path="/feedback" element={<Feedback />} />
                                                     <Route path="/delete-account" element={<DeleteAccount />} />
                                                 </Routes>
