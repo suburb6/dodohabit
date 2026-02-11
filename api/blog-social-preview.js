@@ -62,6 +62,19 @@ const toAbsoluteUrl = (siteUrl, value) => {
     return `${siteUrl}/${input}`;
 };
 
+const normalizeSlug = (rawSlug) => {
+    let slug = String(rawSlug || '').trim();
+    if (!slug) return '';
+
+    try {
+        slug = decodeURIComponent(slug);
+    } catch {
+        slug = String(rawSlug || '').trim();
+    }
+
+    return slug.replace(/^\/+|\/+$/g, '');
+};
+
 const buildPreviewHtml = ({
     canonicalUrl,
     title,
@@ -146,12 +159,7 @@ export default async function handler(req, res) {
     const env = globalThis.process?.env || {};
     const projectId = env.FIREBASE_PROJECT_ID || env.VITE_FIREBASE_PROJECT_ID || 'dodohabitweb';
     const rawSlug = Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug;
-    let slug = String(rawSlug || '').trim();
-    try {
-        slug = decodeURIComponent(slug);
-    } catch {
-        slug = String(rawSlug || '').trim();
-    }
+    const slug = normalizeSlug(rawSlug);
     const siteUrl = getSiteUrl(req);
     const canonicalPath = slug ? `/blog/${encodeURIComponent(slug)}` : '/blog';
     const canonicalUrl = `${siteUrl}${canonicalPath}`;
