@@ -12,6 +12,17 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/blog/(.*)",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|SkypeUriPreview|Pinterestbot|vkShare|Iframely).*"
+                }
+            ],
+            "destination": "/api/blog-social-preview?slug=$1"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
