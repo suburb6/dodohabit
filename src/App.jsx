@@ -73,7 +73,7 @@ const App = () => {
                         <ToastProvider>
                         <Router>
                             <SmoothScrollManager />
-                            <div className="app-shell min-h-screen flex flex-col font-sans text-[var(--text-primary)] transition-colors duration-300">
+                            <div className="app-shell relative min-h-screen flex flex-col font-sans text-[var(--text-primary)] transition-colors duration-300 overflow-x-clip">
                                 <BackgroundEffects />
 
                                 <Routes>

@@ -9,7 +9,7 @@ const BlogCard = ({ post }) => {
     const latestDate = post.updatedAt || post.publishedAt || post.createdAt;
 
     return (
-        <article className="group relative flex flex-col items-start justify-between h-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 transition-all duration-300 hover:border-blue-500/50 hover:bg-[var(--bg-primary)] hover:-translate-y-1">
+        <article className="group surface-card relative flex flex-col items-start justify-between h-full rounded-2xl p-4 transition-all duration-300 hover:border-[var(--accent-primary)] hover:-translate-y-1">
             <div className="w-full aspect-[16/9] mb-6 overflow-hidden rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
                 {post.featuredImage ? (
                     <div className="relative w-full h-full">
@@ -39,12 +39,12 @@ const BlogCard = ({ post }) => {
 
             <div className="w-full flex-1 flex flex-col">
                 <div className="flex items-center gap-3 text-xs font-semibold text-[var(--text-secondary)] mb-3 uppercase tracking-wider">
-                    <span className="text-blue-500 font-bold">Blog</span>
+                    <span className="text-[var(--accent-primary)] font-bold">Blog</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]"></span>
                     <span>{formatBlogDate(latestDate)}</span>
                 </div>
 
-                <h3 className="mt-2 text-xl font-bold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors line-clamp-2">
+                <h3 className="mt-2 text-xl font-display font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-2">
                     <Link to={`/blog/${post.slug}`}>
                         <span className="absolute inset-0" />
                         {post.title}
@@ -56,7 +56,7 @@ const BlogCard = ({ post }) => {
                         {post.authorName && stats?.text && <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />}
                         {stats?.text && (
                             <span className="inline-flex items-center gap-1">
-                                <Clock size={12} className="text-blue-500" />
+                                <Clock size={12} className="text-[var(--accent-primary)]" />
                                 {stats.text}
                             </span>
                         )}
@@ -68,7 +68,7 @@ const BlogCard = ({ post }) => {
                 </p>
 
                 <div className="mt-6 flex items-center justify-end w-full border-t border-[var(--border-color)] pt-4">
-                    <div className="flex items-center gap-1 text-sm font-bold text-blue-500 group-hover:gap-2 transition-all">
+                    <div className="flex items-center gap-1 text-sm font-bold text-[var(--accent-primary)] group-hover:gap-2 transition-all">
                         Read Article <ArrowRight size={16} />
                     </div>
                 </div>

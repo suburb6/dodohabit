@@ -1,28 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="border-t border-[var(--border-color)] bg-[var(--bg-primary)] py-8 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+        <footer className="relative mt-16 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/65 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-6 md:px-8 py-10 md:py-12">
+                <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_auto] gap-8 items-start">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <img src="/icon.png" alt="DodoHabit" className="w-8 h-8 rounded-lg" />
+                            <div>
+                                <p className="font-display text-base font-bold text-[var(--text-primary)]">DodoHabit</p>
+                                <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)]">Build habits with clarity</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-[var(--text-secondary)] max-w-md">
+                            A focused habit platform for people who want structure without noise.
+                        </p>
+                    </div>
 
-                {/* Logo - Order 1 on mobile, Left on desktop */}
-                <div className="flex items-center gap-2">
-                    <img src="/icon.png?v=2" alt="DodoHabit" className="w-6 h-6 rounded" />
-                    <span className="text-sm font-semibold text-[var(--text-secondary)]">Dodohabit</span>
+                    <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-[var(--text-secondary)]">
+                        <Link to="/blog" className="hover:text-[var(--accent-primary)] transition-colors">Blog</Link>
+                        <Link to="/privacy" className="hover:text-[var(--accent-primary)] transition-colors">Privacy</Link>
+                        <Link to="/terms" className="hover:text-[var(--accent-primary)] transition-colors">Terms</Link>
+                        <Link to="/feedback" className="hover:text-[var(--accent-primary)] transition-colors">Feedback</Link>
+                    </div>
+
+                    <Link
+                        to="/feedback"
+                        className="btn-secondary rounded-xl px-4 py-2.5 text-sm font-semibold inline-flex items-center gap-2 w-fit"
+                    >
+                        Contact Team
+                        <ArrowUpRight size={16} />
+                    </Link>
                 </div>
 
-                {/* Menu Links - Order 2 on mobile, Center on desktop */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm text-[var(--text-secondary)]">
-                    <Link to="/blog" className="hover:text-[var(--text-primary)] transition-colors">Blog</Link>
-                    <Link to="/privacy" className="hover:text-[var(--text-primary)] transition-colors">Privacy Policy</Link>
-                    <Link to="/terms" className="hover:text-[var(--text-primary)] transition-colors">Terms & Conditions</Link>
-                    <Link to="/feedback" className="hover:text-[var(--text-primary)] transition-colors">Feedback</Link>
-                </div>
-
-                {/* Copyright - Order 3 on mobile, Right on desktop */}
-                <div className="text-xs text-[var(--text-secondary)]">
-                    © 2026 Dodohabit Inc.
+                <div className="mt-10 pt-6 border-t border-[var(--border-color)] text-xs text-[var(--text-secondary)] flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+                    <span>© 2026 Dodohabit Inc.</span>
+                    <span>Designed for calm consistency.</span>
                 </div>
             </div>
         </footer>

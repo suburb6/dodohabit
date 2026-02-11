@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
 import {
-    Download,
     Activity,
-    Shield,
-    Smartphone,
-    Zap,
-    Clock,
-    Trophy,
-    Calendar
+    ArrowRight,
+    CalendarCheck2,
+    Goal,
+    Layers3,
+    Sparkles,
+    TimerReset,
 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 import habitListsImg from '../assets/screenshots/habit-lists.jpg';
 import autoTrackingImg from '../assets/screenshots/auto-fitness-analytics.jpg';
@@ -19,390 +18,351 @@ import heatmapsImg from '../assets/screenshots/heatmaps.jpg';
 import customGoalsImg from '../assets/screenshots/custom-habit.jpg';
 import yourThemeImg from '../assets/screenshots/custom-appearance.jpg';
 
+const pillars = [
+    {
+        title: 'Clarity Over Clutter',
+        description: 'Every screen is designed to answer one question: what matters today?',
+        icon: Goal,
+    },
+    {
+        title: 'Automatic Momentum',
+        description: 'Step tracking and recurring flows reduce friction and keep habits moving.',
+        icon: Activity,
+    },
+    {
+        title: 'Visual Feedback Loop',
+        description: 'Heatmaps and trend views make progress obvious before motivation drops.',
+        icon: Layers3,
+    },
+];
+
+const revealContainer = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.12 },
+    },
+};
+
+const revealItem = {
+    hidden: { opacity: 0, y: 24 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.58, ease: [0.21, 0.47, 0.32, 0.98] },
+    },
+};
+
 const Home = () => {
-    const [isAppStoreFlipped, setIsAppStoreFlipped] = useState(false);
-    const [isPlayStoreFlipped, setIsPlayStoreFlipped] = useState(false);
-
-    // Auto-flip back after 2 seconds
-    useEffect(() => {
-        if (isAppStoreFlipped) {
-            const timer = setTimeout(() => {
-                setIsAppStoreFlipped(false);
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [isAppStoreFlipped]);
-
-    useEffect(() => {
-        if (isPlayStoreFlipped) {
-            const timer = setTimeout(() => {
-                setIsPlayStoreFlipped(false);
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [isPlayStoreFlipped]);
-
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const features = [
-        {
-            title: "HABIT LISTS",
-            subtitle: "Stay organized.",
-            color: "from-[#FF5733] to-[#C13615]",
-            image: habitListsImg,
-            mockupBg: "bg-white",
-            imageClass: "translate-y-2"
-        },
-        {
-            title: "AUTO TRACKING",
-            subtitle: "Steps & Analytics.",
-            color: "from-[#3B82F6] to-[#1D4ED8]",
-            image: autoTrackingImg,
-            mockupBg: "bg-white"
-        },
-        {
-            title: "HEATMAPS",
-            subtitle: "Visualize streaks.",
-            color: "from-[#A855F7] to-[#7E22CE]",
-            image: heatmapsImg,
-            mockupBg: "bg-white"
-        },
-        {
-            title: "CUSTOM GOALS",
-            subtitle: "Tailor your success.",
-            color: "from-[#22C55E] to-[#15803D]",
-            image: customGoalsImg,
-            mockupBg: "bg-white",
-            imageClass: "translate-y-0"
-        },
-        {
-            title: "YOUR THEME",
-            subtitle: "Make it yours.",
-            color: "from-[#EC4899] to-[#BE185D]",
-            image: yourThemeImg,
-            mockupBg: "bg-[#27272A]",
-            hideHeader: false,
-            imageClass: "translate-y-0"
-        }
-    ];
-
-    const nextSlide = () => {
-        setActiveIndex((prev) => (prev + 1) % features.length);
-    };
-
-    const prevSlide = () => {
-        setActiveIndex((prev) => (prev - 1 + features.length) % features.length);
-    };
+    const heroRef = useRef(null);
+    const { scrollYProgress } = useScroll({
+        target: heroRef,
+        offset: ['start start', 'end start'],
+    });
+    const visualY = useTransform(scrollYProgress, [0, 1], [0, -64]);
+    const glowY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
     return (
-        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden transition-colors duration-300">
-
+        <div className="min-h-screen text-[var(--text-primary)] font-sans overflow-x-clip">
             <SEO
                 title="Home"
-                description="The all-in-one habit tracker with auto step counting, heatmaps, and smart analytics. Build positive habits or break bad ones with DodoHabit."
+                description="DodoHabit helps you design a calm, repeatable routine with auto-tracking, heatmaps, and focused daily execution."
             />
 
-
-            <main className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
-                {/* Hero Section */}
-                <section className="flex flex-col items-center text-center mb-12 relative">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="mb-6"
-                    >
-                        <span className="px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-xs font-medium tracking-wide">
-                            COMING SOON
-                        </span>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]"
-                    >
-                        Build better habits.<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400">
-                            Track everything.
-                        </span>
-                    </motion.h1>
-
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mb-12"
-                    >
-                        The all-in-one habit tracker with auto step counting, heatmaps,
-                        and smart analytics. Build positive habits or break bad ones.
-                    </motion.p>
-
-                    {/* Store Buttons */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="flex flex-wrap items-center justify-center gap-4 mb-20 select-none"
-                    >
-                        {/* Play Store Button */}
+            <main className="pt-32 pb-24">
+                <section ref={heroRef} className="max-w-7xl mx-auto px-4 md:px-8">
+                    <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
                         <motion.div
-                            className="relative w-[180px] h-[54px] cursor-pointer perspective-1000"
-                            onClick={() => setIsPlayStoreFlipped(true)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 22 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.65, ease: 'easeOut' }}
                         >
-                            <motion.div
-                                className="w-full h-full relative"
-                                initial={false}
-                                animate={{ rotateX: isPlayStoreFlipped ? 180 : 0 }}
-                                transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                                style={{ transformStyle: "preserve-3d" }}
-                            >
-                                {/* Front Face */}
-                                <div
-                                    className="absolute inset-0 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm"
-                                    style={{ backfaceVisibility: "hidden" }}
+                            <p className="section-kicker mb-6">Habit Design Studio</p>
+                            <h1 className="font-display text-5xl md:text-7xl leading-[1.02] font-extrabold tracking-tight">
+                                Build a routine that feels
+                                <br />
+                                <span className="headline-gradient">clean, calm, and hard to break.</span>
+                            </h1>
+                            <p className="mt-7 text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+                                DodoHabit gives you structure without noise. Plan clear habits, track automatic progress,
+                                and keep your streaks visible in one focused space.
+                            </p>
+
+                            <div className="mt-9 flex flex-wrap items-center gap-3">
+                                <Link
+                                    to="/feedback"
+                                    className="btn-primary rounded-xl px-6 py-3 font-semibold inline-flex items-center gap-2"
                                 >
+                                    Join Early Access
+                                    <ArrowRight size={18} />
+                                </Link>
+                                <Link to="/blog" className="btn-secondary rounded-xl px-6 py-3 font-semibold">
+                                    Explore the Blog
+                                </Link>
+                            </div>
+
+                            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="surface-card rounded-2xl p-4">
+                                    <p className="text-3xl font-display font-bold text-[var(--text-primary)]">5+</p>
+                                    <p className="mt-1 text-sm text-[var(--text-secondary)]">Core habit workflows</p>
+                                </div>
+                                <div className="surface-card rounded-2xl p-4">
+                                    <p className="text-3xl font-display font-bold text-[var(--text-primary)]">24/7</p>
+                                    <p className="mt-1 text-sm text-[var(--text-secondary)]">Automatic step sync</p>
+                                </div>
+                                <div className="surface-card rounded-2xl p-4">
+                                    <p className="text-3xl font-display font-bold text-[var(--text-primary)]">1 tap</p>
+                                    <p className="mt-1 text-sm text-[var(--text-secondary)]">Daily progress check-in</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        <motion.div style={{ y: visualY }} className="relative">
+                            <motion.div
+                                style={{ y: glowY }}
+                                className="absolute -inset-10 rounded-[3rem] blur-3xl"
+                                aria-hidden
+                            >
+                                <div className="w-full h-full rounded-[3rem] bg-gradient-to-tr from-[var(--accent-primary)]/20 via-transparent to-[var(--accent-secondary)]/20" />
+                            </motion.div>
+
+                            <div className="relative surface-card rounded-[2rem] p-4 md:p-5">
+                                <div className="rounded-[1.45rem] overflow-hidden border border-[var(--border-color)]">
                                     <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg"
-                                        alt="Play Store"
-                                        className="w-6 h-6"
-                                        draggable="false"
+                                        src={habitListsImg}
+                                        alt="DodoHabit list overview"
+                                        className="w-full h-[300px] md:h-[360px] object-cover object-top"
                                     />
-                                    <div className="text-left">
-                                        <div className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">GET IT ON</div>
-                                        <div className="text-sm font-bold text-[var(--text-primary)] leading-none">Google Play</div>
+                                </div>
+                                <div className="mt-4 grid grid-cols-2 gap-3">
+                                    <div className="rounded-2xl overflow-hidden border border-[var(--border-color)]">
+                                        <img src={heatmapsImg} alt="Heatmap preview" className="w-full h-24 object-cover" />
+                                    </div>
+                                    <div className="rounded-2xl overflow-hidden border border-[var(--border-color)]">
+                                        <img src={customGoalsImg} alt="Custom goals preview" className="w-full h-24 object-cover" />
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Back Face */}
-                                <div
-                                    className="absolute inset-0 bg-[#FF5733] rounded-xl flex items-center justify-center border border-[#FF5733]"
-                                    style={{
-                                        backfaceVisibility: "hidden",
-                                        transform: "rotateX(180deg)"
-                                    }}
-                                >
-                                    <span className="text-white font-bold tracking-wide">Coming Soon!</span>
+                            <motion.div
+                                className="hidden md:flex absolute -left-10 top-12 glass-panel rounded-2xl p-3 items-center gap-3 animate-float-slow"
+                                initial={{ opacity: 0, x: -16 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.45, duration: 0.6 }}
+                            >
+                                <div className="w-9 h-9 rounded-xl bg-[var(--accent-primary)]/15 flex items-center justify-center text-[var(--accent-primary)]">
+                                    <Sparkles size={18} />
                                 </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-secondary)]">Live signal</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">Auto tracking is active</p>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                className="hidden md:block absolute -right-8 bottom-16 glass-panel rounded-2xl p-4"
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.58, duration: 0.6 }}
+                            >
+                                <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-secondary)]">Current streak health</p>
+                                <p className="mt-1 text-2xl font-display font-bold text-[var(--text-primary)]">92%</p>
+                                <p className="text-sm text-[var(--text-secondary)]">consistency score this week</p>
                             </motion.div>
                         </motion.div>
-
-                        {/* App Store Button */}
-                        <motion.div
-                            className="relative w-[180px] h-[54px] cursor-pointer perspective-1000"
-                            onClick={() => setIsAppStoreFlipped(true)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <motion.div
-                                className="w-full h-full relative"
-                                initial={false}
-                                animate={{ rotateX: isAppStoreFlipped ? 180 : 0 }}
-                                transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                                style={{ transformStyle: "preserve-3d" }}
-                            >
-                                {/* Front Face */}
-                                <div
-                                    className="absolute inset-0 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center gap-3 transition-colors shadow-sm"
-                                    style={{ backfaceVisibility: "hidden" }}
-                                >
-                                    <div className="w-6 h-6 flex items-center justify-center">
-                                        <svg viewBox="0 0 384 512" fill="currentColor" className="w-7 h-7 text-[var(--text-primary)]">
-                                            <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 46.9 126.7 98 126.7 6.6 0 14-2.2 20.6-5.4 15-7.2 34-15 57.5-15 23.9 0 46.9 8.7 57.5 14.7 6.9 3.9 14.3 5.4 20.6 5.4 53.9 0 76.3-89.2 88.5-125.7-52.7-22.1-73.4-56.3-72.3-102.3zm-77-175.7c25.4-25.4 46-56.8 40.4-89-21.5 0-47.3 14.4-61.1 27.9-19.1 18.2-34.9 49.3-29.2 82.3 26 0 35.8-9 50-21.2z" />
-                                        </svg>
-                                    </div>
-                                    <div className="text-left">
-                                        <div className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">GET IT ON</div>
-                                        <div className="text-sm font-bold text-[var(--text-primary)] leading-none">App Store</div>
-                                    </div>
-                                </div>
-
-                                {/* Back Face */}
-                                <div
-                                    className="absolute inset-0 bg-[#FF5733] rounded-xl flex items-center justify-center border border-[#FF5733]"
-                                    style={{
-                                        backfaceVisibility: "hidden",
-                                        transform: "rotateX(180deg)"
-                                    }}
-                                >
-                                    <span className="text-white font-bold tracking-wide">Coming Soon!</span>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    </motion.div>
-
-                    {/* Mobile Slider (Visible < md) */}
-                    <div className="w-full relative h-[600px] flex items-center justify-center md:hidden perspective-1000 overflow-hidden">
-                        {features.map((item, index) => {
-                            // Calculate relative position based on activeIndex
-                            let position = index - activeIndex;
-
-                            // Handle wrapping for infinite feel (optional, but requested simple slider)
-                            // Let's keep it simple: just clamp or standard list
-                            // But user wants "behind nexts are smaller", implies centering.
-                            // Let's stick to standard index logic for simplicity and robustness first.
-
-                            const isActive = index === activeIndex;
-                            const isNext = index === activeIndex + 1;
-                            const isPrev = index === activeIndex - 1;
-
-                            // Determine styles
-                            let x = 0;
-                            let scale = 0.8;
-                            let opacity = 0;
-                            let zIndex = 0;
-
-                            if (isActive) {
-                                x = 0;
-                                scale = 1;
-                                opacity = 1;
-                                zIndex = 30;
-                            } else if (isNext) {
-                                x = 120; // partially offscreen right
-                                scale = 0.85;
-                                opacity = 1;
-                                zIndex = 20;
-                            } else if (isPrev) {
-                                x = -120; // partially offscreen left
-                                scale = 0.85;
-                                opacity = 1;
-                                zIndex = 20;
-                            } else {
-                                opacity = 0;
-                                zIndex = 10;
-                            }
-
-                            // If distinct index > 1, hide
-                            if (Math.abs(index - activeIndex) > 1) return null;
-
-                            return (
-                                <motion.div
-                                    key={index}
-                                    initial={false}
-                                    animate={{ x, scale, opacity, zIndex }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 40, mass: 1.2 }}
-                                    style={{
-                                        touchAction: "pan-y" // Allow vertical scrolling, block horizontal for drag
-                                    }}
-                                    drag={isActive ? "x" : false}
-                                    dragConstraints={{ left: 0, right: 0 }}
-                                    dragElastic={0.2}
-                                    onDragEnd={(e, { offset, velocity }) => {
-                                        const swipe = offset.x; // + is right (prev), - is left (next)
-
-                                        if (swipe < -50) {
-                                            nextSlide();
-                                        } else if (swipe > 50) {
-                                            prevSlide();
-                                        }
-                                    }}
-                                    className="absolute top-0 flex flex-col items-center gap-4 cursor-grab active:cursor-grabbing select-none"
-                                    onClick={() => !isActive && setActiveIndex(index)}
-                                >
-                                    <div className={`relative w-[260px] h-[520px] rounded-[40px] bg-gradient-to-b ${item.color} p-6 flex flex-col items-center overflow-hidden border border-white/10 shadow-2xl`}>
-                                        {/* Text Content Top */}
-                                        <div className="text-center mb-2 z-10 pointer-events-none">
-                                            <h2 className="text-2xl font-black text-white italic tracking-tighter mb-1 uppercase leading-none">
-                                                {item.title}
-                                            </h2>
-                                            <p className="text-xs font-bold text-white/80 uppercase tracking-widest">
-                                                {item.subtitle}
-                                            </p>
-                                        </div>
-
-                                        {/* Logo & App Name */}
-                                        {!item.hideHeader && (
-                                            <div className="flex items-center gap-3 mb-4 z-10 pointer-events-none">
-                                                <img src="/icon.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
-                                                <span className="font-bold text-white text-lg tracking-wide text-shadow-sm">Dodohabit</span>
-                                            </div>
-                                        )}
-
-                                        <div className={`relative w-[220px] h-full ${item.mockupBg} rounded-t-[30px] border-[8px] border-b-0 border-gray-900 shadow-2xl flex flex-col overflow-hidden ${item.containerClass || 'translate-y-8'}`}>
-                                            <img
-                                                src={item.image}
-                                                alt={item.title}
-                                                draggable={false}
-                                                className={`w-full h-full object-cover object-top ${item.imageClass || 'translate-y-3'} select-none`}
-                                            />
-                                        </div>
-
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-
-                        {/* Slider Controls Hint */}
-                        <div className="absolute bottom-4 flex gap-2">
-                            {features.map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setActiveIndex(i)}
-                                    className={`w-2 h-2 rounded-full transition-all ${i === activeIndex ? 'bg-white w-4' : 'bg-white/30'}`}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Desktop Grid (Visible >= md) */}
-                    <div className="hidden md:flex w-full items-start justify-center gap-6 md:gap-8 px-8 md:px-16 select-none">
-                        {features.map((item, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 40 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 * index }}
-                                className="flex-shrink-0 flex flex-col items-center gap-4"
-                            >
-                                <div className={`relative w-[260px] h-[520px] rounded-[40px] bg-gradient-to-b ${item.color} p-6 flex flex-col items-center overflow-hidden border border-white/10 shadow-2xl group hover:-translate-y-2 transition-transform duration-500`}>
-
-                                    {/* Text Content Top */}
-                                    <div className="text-center mb-2 z-10 pointer-events-none">
-                                        <h2 className="text-2xl font-black text-white italic tracking-tighter mb-1 uppercase leading-none">
-                                            {item.title}
-                                        </h2>
-                                        <p className="text-xs font-bold text-white/80 uppercase tracking-widest">
-                                            {item.subtitle}
-                                        </p>
-                                    </div>
-
-                                    {/* Logo & App Name */}
-                                    {!item.hideHeader && (
-                                        <div className="flex items-center gap-3 mb-4 z-10 pointer-events-none">
-                                            <img src="/icon.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
-                                            <span className="font-bold text-white text-lg tracking-wide text-shadow-sm">Dodohabit</span>
-                                        </div>
-                                    )}
-
-                                    <div className={`relative w-[220px] h-full ${item.mockupBg} rounded-t-[30px] border-[8px] border-b-0 border-gray-900 shadow-2xl flex flex-col overflow-hidden ${item.containerClass || 'translate-y-8'}`}>
-                                        <img
-                                            src={item.image}
-                                            alt={item.title}
-                                            draggable={false}
-                                            className={`w-full h-full object-cover object-top ${item.imageClass || 'translate-y-3'} select-none`}
-                                        />
-                                    </div>
-
-                                    {/* Background Shine */}
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
-                                </div>
-                            </motion.div>
-                        ))}
                     </div>
                 </section>
 
+                <section className="max-w-7xl mx-auto px-4 md:px-8 mt-24 md:mt-28">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.35 }}
+                        transition={{ duration: 0.6 }}
+                        className="max-w-3xl"
+                    >
+                        <p className="section-kicker mb-4">Why it feels different</p>
+                        <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-[var(--text-primary)]">
+                            A product language designed for momentum, not just motivation.
+                        </h2>
+                    </motion.div>
 
+                    <motion.div
+                        variants={revealContainer}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.2 }}
+                        className="mt-10 grid md:grid-cols-3 gap-4"
+                    >
+                        {pillars.map((pillar) => {
+                            const Icon = pillar.icon;
+                            return (
+                                <motion.article
+                                    key={pillar.title}
+                                    variants={revealItem}
+                                    className="surface-card rounded-2xl p-6"
+                                >
+                                    <div className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/14 text-[var(--accent-primary)] flex items-center justify-center">
+                                        <Icon size={20} />
+                                    </div>
+                                    <h3 className="mt-5 font-display text-xl font-semibold">{pillar.title}</h3>
+                                    <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{pillar.description}</p>
+                                </motion.article>
+                            );
+                        })}
+                    </motion.div>
+                </section>
 
+                <section className="max-w-7xl mx-auto px-4 md:px-8 mt-24 md:mt-28">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 0.6 }}
+                        className="mb-8 max-w-2xl"
+                    >
+                        <p className="section-kicker mb-4">Visual System</p>
+                        <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">See progress at a glance.</h2>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <motion.article
+                            initial={{ opacity: 0, y: 24 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.2 }}
+                            transition={{ duration: 0.6 }}
+                            className="md:col-span-7 surface-card rounded-[1.8rem] p-4"
+                        >
+                            <div className="rounded-2xl overflow-hidden border border-[var(--border-color)] mb-4">
+                                <img src={autoTrackingImg} alt="Auto-tracking analytics" className="w-full h-[320px] object-cover" />
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/14 text-[var(--accent-primary)] flex items-center justify-center shrink-0">
+                                    <TimerReset size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-display text-xl font-semibold">Effortless Progress Feed</h3>
+                                    <p className="text-sm text-[var(--text-secondary)] mt-2 leading-7">
+                                        Auto analytics turn passive activity into an active routine signal, so you always know where your consistency stands.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.article>
+
+                        <div className="md:col-span-5 grid grid-cols-1 gap-4">
+                            <motion.article
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, amount: 0.2 }}
+                                transition={{ duration: 0.6, delay: 0.06 }}
+                                className="surface-card rounded-[1.8rem] p-4"
+                            >
+                                <div className="rounded-2xl overflow-hidden border border-[var(--border-color)]">
+                                    <img src={yourThemeImg} alt="Theme customization" className="w-full h-44 object-cover object-top" />
+                                </div>
+                                <h3 className="mt-4 font-display text-lg font-semibold">Custom Theme Control</h3>
+                                <p className="text-sm text-[var(--text-secondary)] mt-2">Shape the app around your visual rhythm and make it yours.</p>
+                            </motion.article>
+
+                            <motion.article
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, amount: 0.2 }}
+                                transition={{ duration: 0.6, delay: 0.12 }}
+                                className="surface-card rounded-[1.8rem] p-4"
+                            >
+                                <div className="rounded-2xl overflow-hidden border border-[var(--border-color)]">
+                                    <img src={heatmapsImg} alt="Heatmap analytics" className="w-full h-44 object-cover object-top" />
+                                </div>
+                                <h3 className="mt-4 font-display text-lg font-semibold">Heatmap Pattern View</h3>
+                                <p className="text-sm text-[var(--text-secondary)] mt-2">Spot behavior trends before streak drops become regressions.</p>
+                            </motion.article>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="max-w-5xl mx-auto px-4 md:px-8 mt-24 md:mt-28">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center max-w-3xl mx-auto"
+                    >
+                        <p className="section-kicker mb-4">Workflow</p>
+                        <h2 className="font-display text-3xl md:text-5xl font-bold">Three steps. Zero confusion.</h2>
+                    </motion.div>
+
+                    <motion.div
+                        variants={revealContainer}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.2 }}
+                        className="mt-10 grid md:grid-cols-3 gap-4"
+                    >
+                        {[
+                            {
+                                icon: CalendarCheck2,
+                                title: 'Plan Intentionally',
+                                description: 'Define habits that actually map to your life constraints.',
+                            },
+                            {
+                                icon: Activity,
+                                title: 'Track Without Noise',
+                                description: 'Update fast, auto-capture steps, and keep your focus on execution.',
+                            },
+                            {
+                                icon: Goal,
+                                title: 'Review and Adjust',
+                                description: 'Use heatmaps and streak trends to improve week over week.',
+                            },
+                        ].map((step, index) => {
+                            const Icon = step.icon;
+                            return (
+                                <motion.article key={step.title} variants={revealItem} className="surface-card rounded-2xl p-6 relative">
+                                    <span className="absolute top-4 right-5 text-xs font-bold text-[var(--accent-primary)]/55">
+                                        0{index + 1}
+                                    </span>
+                                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] flex items-center justify-center">
+                                        <Icon size={18} />
+                                    </div>
+                                    <h3 className="mt-5 font-display text-xl font-semibold">{step.title}</h3>
+                                    <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{step.description}</p>
+                                </motion.article>
+                            );
+                        })}
+                    </motion.div>
+                </section>
+
+                <section className="max-w-6xl mx-auto px-4 md:px-8 mt-24 md:mt-28">
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.35 }}
+                        transition={{ duration: 0.65 }}
+                        className="surface-card rounded-[2rem] px-6 md:px-10 py-10 md:py-12 text-center"
+                    >
+                        <p className="section-kicker mb-4">Coming Soon</p>
+                        <h2 className="font-display text-3xl md:text-5xl font-bold max-w-3xl mx-auto">
+                            Ready for a habit system that feels premium and focused?
+                        </h2>
+                        <p className="mt-5 text-[var(--text-secondary)] max-w-2xl mx-auto text-lg leading-relaxed">
+                            Join early access and help shape the launch version of DodoHabit.
+                        </p>
+                        <div className="mt-8 flex flex-wrap justify-center items-center gap-3">
+                            <Link to="/feedback" className="btn-primary rounded-xl px-6 py-3 font-semibold inline-flex items-center gap-2">
+                                Request Access
+                                <ArrowRight size={18} />
+                            </Link>
+                            <Link to="/blog" className="btn-secondary rounded-xl px-6 py-3 font-semibold">
+                                Read Product Notes
+                            </Link>
+                        </div>
+                    </motion.div>
+                </section>
             </main>
-
-        </div >
+        </div>
     );
 };
-
-
 
 export default Home;

@@ -8,6 +8,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Outfit', 'sans-serif'],
+                display: ['Sora', 'Outfit', 'sans-serif'],
             },
         },
     },
