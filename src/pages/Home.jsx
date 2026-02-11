@@ -106,7 +106,7 @@ const Home = () => {
                         <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">A closer look at DodoHabit in action.</h2>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-flow-col auto-cols-[72%] md:auto-cols-[38%] lg:auto-cols-[16.3%] gap-3 overflow-x-auto pb-2 thin-scrollbar">
                         {previewShots.map((src, index) => (
                             <motion.div
                                 key={src}
