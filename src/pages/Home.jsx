@@ -103,10 +103,10 @@ const Home = () => {
                         className="mb-6"
                     >
                         <p className="section-kicker mb-3">App Previews</p>
-                        <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">Real app screens from your assets.</h2>
+                        <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight">A closer look at DodoHabit in action.</h2>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {previewShots.map((src, index) => (
                             <motion.div
                                 key={src}
