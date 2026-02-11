@@ -27,7 +27,7 @@ const Navbar = () => {
     return (
         <header className="fixed inset-x-0 top-0 z-50 px-4 md:px-8 pt-4">
             <nav className="mx-auto max-w-7xl rounded-2xl glass-panel shadow-soft">
-                <div className="h-16 px-4 md:px-6 flex items-center gap-3">
+                <div className="h-16 px-4 md:px-6 flex items-center gap-3 relative">
                     <Link to="/" className="flex items-center gap-3 shrink-0">
                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-primary-strong)] p-[1px]">
                             <div className="w-full h-full rounded-[10px] bg-[var(--bg-secondary)] flex items-center justify-center">
@@ -40,7 +40,7 @@ const Navbar = () => {
                         </div>
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-1 mx-auto">
+                    <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
                         {navLinks.map((link) => {
                             const active = isLinkActive(location.pathname, link.id);
                             return (
