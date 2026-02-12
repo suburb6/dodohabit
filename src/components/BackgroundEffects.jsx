@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -7,8 +7,19 @@ const BackgroundEffects = () => {
     const { theme } = useTheme();
     const location = useLocation();
     const isDark = theme === 'dark';
+    const prefersReducedMotion = useReducedMotion();
+    const [isMobile, setIsMobile] = useState(false);
 
-    if (location.pathname.startsWith('/admin')) {
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const media = window.matchMedia('(max-width: 1023px), (pointer: coarse)');
+        const update = () => setIsMobile(media.matches);
+        update();
+        media.addEventListener('change', update);
+        return () => media.removeEventListener('change', update);
+    }, []);
+
+    if (location.pathname.startsWith('/admin') || isMobile || prefersReducedMotion) {
         return null;
     }
 

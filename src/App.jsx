@@ -35,6 +35,14 @@ const SmoothScrollManager = () => {
             return undefined;
         }
 
+        if (typeof window !== 'undefined') {
+            const isTouchLike = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024;
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (isTouchLike || prefersReducedMotion) {
+                return undefined;
+            }
+        }
+
         const lenis = new Lenis(/** @type {any} */({
             duration: 0.8,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

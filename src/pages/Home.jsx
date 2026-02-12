@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
 import { Apple } from 'lucide-react';
 
@@ -27,44 +26,36 @@ const Home = () => {
 
             <main className="pt-32 pb-20 px-4 md:px-8 max-w-[1800px] mx-auto">
                 <section className="text-center mb-10">
-                    <motion.p
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.45 }}
-                        className="section-kicker mb-4"
-                    >
+                    <p className="section-kicker mb-4">
                         DodoHabit
-                    </motion.p>
+                    </p>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.58, delay: 0.05 }}
-                        className="font-display text-5xl md:text-7xl leading-[1.03] font-extrabold tracking-tight"
-                    >
+                    <h1 className="font-display text-5xl md:text-7xl leading-[1.03] font-extrabold tracking-tight">
                         Your habit system,
                         <br />
                         <span className="headline-gradient">now clean and customizable.</span>
-                    </motion.h1>
+                    </h1>
                 </section>
 
                 <section className="overflow-x-auto thin-scrollbar pb-2">
                     <div className="mx-auto w-max min-w-full flex items-start justify-start xl:justify-center gap-6 md:gap-7 px-1">
                         {features.map((item, index) => (
-                            <motion.div
+                            <div
                                 key={item.id}
-                                initial={{ opacity: 0, y: 24 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.52, delay: 0.08 + index * 0.08 }}
                                 className="relative w-[260px] h-[520px] rounded-[28px] flex-shrink-0 overflow-hidden border border-[var(--border-color)] shadow-soft bg-[var(--bg-secondary)]"
                             >
                                 <img
                                     src={item.image}
                                     alt={item.alt}
+                                    loading={index === 0 ? 'eager' : 'lazy'}
+                                    decoding="async"
+                                    fetchPriority={index === 0 ? 'high' : 'low'}
+                                    width="260"
+                                    height="520"
                                     draggable={false}
                                     className="w-full h-full object-cover object-center"
                                 />
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </section>
