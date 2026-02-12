@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Smartphone } from 'lucide-react';
+import { ArrowRight, Play, Smartphone } from 'lucide-react';
 import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import { useBlog } from '../contexts/BlogContext';
@@ -107,7 +107,7 @@ const Blog = () => {
                             <div className="mt-auto pt-6">
                                 <Link to={`/blog/${featuredPost.slug}`} className="btn-primary rounded-xl px-5 py-3 font-semibold inline-flex items-center gap-2">
                                     Read Article
-                                    <Play size={16} />
+                                    <ArrowRight size={16} />
                                 </Link>
                             </div>
                         </div>

@@ -29,14 +29,10 @@ const Navbar = () => {
             <nav className="mx-auto max-w-7xl rounded-2xl glass-panel shadow-soft">
                 <div className="h-16 px-4 md:px-6 flex items-center gap-3 relative">
                     <Link to="/" className="flex items-center gap-3 shrink-0">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-primary-strong)] p-[1px]">
-                            <div className="w-full h-full rounded-[10px] bg-[var(--bg-secondary)] flex items-center justify-center">
-                                <img src="/icon.png" alt="DodoHabit" className="w-6 h-6 rounded-md" />
-                            </div>
-                        </div>
+                        <img src="/icon.png" alt="DodoHabit logo" className="w-10 h-10 rounded-xl object-cover" />
                         <div className="leading-tight">
                             <p className="font-display text-sm font-bold tracking-tight text-[var(--text-primary)]">DodoHabit</p>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]">Habit OS</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-secondary)]">Habit Tracker App</p>
                         </div>
                     </Link>
 
