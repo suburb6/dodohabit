@@ -10,11 +10,11 @@ import mock44 from '../assets/screenshots/44.jpg';
 import mock55 from '../assets/screenshots/55.jpg';
 
 const features = [
-    { id: 'habit-lists', color: 'from-[#FF6A45] to-[#F0432F]', image: mock11, alt: 'Habit lists preview' },
-    { id: 'auto-tracking', color: 'from-[#4F93FF] to-[#2B65DD]', image: mock22, alt: 'Auto tracking preview' },
-    { id: 'heatmaps', color: 'from-[#A45DF8] to-[#7D2CE0]', image: mock33, alt: 'Heatmaps preview' },
-    { id: 'custom-goals', color: 'from-[#35CE63] to-[#1EA94F]', image: mock44, alt: 'Custom goals preview' },
-    { id: 'your-theme', color: 'from-[#EC53A9] to-[#D7358F]', image: mock55, alt: 'Theme customization preview' },
+    { id: 'habit-lists', image: mock11, alt: 'Habit lists preview' },
+    { id: 'auto-tracking', image: mock22, alt: 'Auto tracking preview' },
+    { id: 'heatmaps', image: mock33, alt: 'Heatmaps preview' },
+    { id: 'custom-goals', image: mock44, alt: 'Custom goals preview' },
+    { id: 'your-theme', image: mock55, alt: 'Theme customization preview' },
 ];
 
 const Home = () => {
@@ -56,16 +56,14 @@ const Home = () => {
                                 initial={{ opacity: 0, y: 24 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.52, delay: 0.08 + index * 0.08 }}
-                                className={`relative w-[260px] h-[520px] rounded-[40px] bg-gradient-to-b ${item.color} p-3 flex-shrink-0 overflow-hidden border border-white/15 shadow-2xl`}
+                                className="relative w-[260px] h-[520px] rounded-[28px] flex-shrink-0 overflow-hidden border border-[var(--border-color)] shadow-soft bg-[var(--bg-secondary)]"
                             >
-                                <div className="relative w-full h-full rounded-[30px] border-[7px] border-[#1E293B] shadow-2xl overflow-hidden bg-[#0B1727]">
-                                    <img
-                                        src={item.image}
-                                        alt={item.alt}
-                                        draggable={false}
-                                        className="w-full h-full object-contain"
-                                    />
-                                </div>
+                                <img
+                                    src={item.image}
+                                    alt={item.alt}
+                                    draggable={false}
+                                    className="w-full h-full object-cover object-center"
+                                />
                             </motion.div>
                         ))}
                     </div>
