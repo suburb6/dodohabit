@@ -27,6 +27,32 @@ const Blog = () => {
     const featuredStats = featuredPost ? readingTime(featuredPost.content || '') : null;
     const featuredLatestDate = featuredPost?.updatedAt || featuredPost?.publishedAt || featuredPost?.createdAt;
     const featuredLead = featuredPost ? getLeadSnippet(featuredPost) : '';
+    const siteUrl = (typeof window !== 'undefined' ? window.location.origin : 'https://dodohabit.com').replace(/\/$/, '');
+    const blogPageUrl = `${siteUrl}/blog`;
+    const blogStructuredData = [
+        {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'DodoHabit Blog',
+            description: 'Deep dives on habits, consistency, and routine design from the DodoHabit team.',
+            url: blogPageUrl,
+            isPartOf: {
+                '@type': 'WebSite',
+                name: 'DodoHabit',
+                url: siteUrl,
+            },
+        },
+        ...(posts.length > 0 ? [{
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            itemListElement: posts.slice(0, 20).map((post, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: `${siteUrl}/blog/${encodeURIComponent(post.slug || '')}`,
+                name: post.title || 'Untitled Post',
+            })),
+        }] : []),
+    ];
 
     if (loading) {
         return (
@@ -48,6 +74,7 @@ const Blog = () => {
             <SEO
                 title="Blog"
                 description="Deep dives on habits, consistency, and routine design from the DodoHabit team."
+                structuredData={blogStructuredData}
             />
 
             <motion.header

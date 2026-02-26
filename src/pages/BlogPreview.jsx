@@ -176,6 +176,7 @@ const BlogPreview = () => {
                 description={metaDescription}
                 image={post.featuredImage}
                 type="article"
+                noindex
             />
 
             <div className="fixed bottom-4 right-4 z-50 bg-yellow-400 text-black px-4 py-2 rounded-full font-bold shadow-lg">
@@ -257,7 +258,7 @@ const BlogPreview = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-8 w-full max-w-[740px] xl:max-w-[760px] 2xl:max-w-[780px]">
+                <div className="lg:col-span-8 w-full max-w-[700px] xl:max-w-[700px] 2xl:max-w-[720px]">
                     <div
                         className="prose prose-base lg:prose-lg max-w-none prose-headings:text-[var(--text-primary)] prose-headings:scroll-mt-32 prose-p:text-[var(--text-secondary)] prose-a:text-[var(--accent-primary)] hover:prose-a:text-[var(--accent-primary-strong)] prose-strong:text-[var(--text-primary)] prose-code:text-[var(--accent-primary)] prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-li:text-[var(--text-secondary)] prose-blockquote:border-l-[var(--accent-primary)] prose-blockquote:text-[var(--text-secondary)]"
                         dangerouslySetInnerHTML={{ __html: processedContent || contentForPreview }}

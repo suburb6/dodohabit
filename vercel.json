@@ -12,12 +12,23 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/blog",
+            "has": [
+                {
+                    "type": "header",
+                    "key": "user-agent",
+                    "value": ".*(Googlebot|AdsBot-Google|Google-InspectionTool|Storebot-Google|Mediapartners-Google|bingbot|Bingbot|BingPreview|DuckDuckBot|YandexBot|Applebot|WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|SkypeUriPreview|Pinterestbot|vkShare|Iframely).*"
+                }
+            ],
+            "destination": "/api/blog-social-preview"
+        },
+        {
             "source": "/blog/(.*)",
             "has": [
                 {
                     "type": "header",
                     "key": "user-agent",
-                    "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|SkypeUriPreview|Pinterestbot|vkShare|Iframely).*"
+                    "value": ".*(Googlebot|AdsBot-Google|Google-InspectionTool|Storebot-Google|Mediapartners-Google|bingbot|Bingbot|BingPreview|DuckDuckBot|YandexBot|Applebot|WhatsApp|whatsapp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|SkypeUriPreview|Pinterestbot|vkShare|Iframely).*"
                 }
             ],
             "destination": "/api/blog-social-preview?slug=$1"

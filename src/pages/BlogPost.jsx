@@ -31,10 +31,18 @@ const getTocAdvanceOffset = () => {
     return Math.round(Math.min(96, Math.max(36, viewportHeight * 0.08)));
 };
 
+const toIsoIfValid = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+};
+
 const BlogPost = () => {
     const { slug } = useParams();
     const { getPost, loading } = useBlog();
-    const post = getPost(slug);
+    const matchedPost = getPost(slug);
+    const post = matchedPost && matchedPost.status === 'published' ? matchedPost : null;
     // Generate Table of Contents and inject IDs
     const [toc, setToc] = useState([]);
     const [processedContent, setProcessedContent] = useState('');
@@ -227,6 +235,7 @@ const BlogPost = () => {
                 <SEO
                     title="Post Not Found"
                     description="This blog post could not be found."
+                    noindex
                 />
                 <h1 className="text-4xl font-bold mb-4 text-[var(--text-primary)]">404</h1>
                 <p className="text-[var(--text-secondary)] mb-8">Post not found</p>
@@ -245,6 +254,40 @@ const BlogPost = () => {
     const stats = readingTime(post.content);
     const publishedAt = post.publishedAt || post.createdAt || new Date();
     const updatedAt = post.updatedAt || null;
+    const publishedIso = toIsoIfValid(publishedAt);
+    const updatedIso = toIsoIfValid(updatedAt) || publishedIso;
+    const siteUrl = (typeof window !== 'undefined' ? window.location.origin : 'https://dodohabit.com').replace(/\/$/, '');
+    const canonicalUrl = `${siteUrl}/blog/${encodeURIComponent(post.slug || slug || '')}`;
+    const absoluteFeaturedImage = post.featuredImage
+        ? (post.featuredImage.startsWith('http') ? post.featuredImage : `${siteUrl}${post.featuredImage}`)
+        : `${siteUrl}/og-image.png`;
+    const schemaDescription = metaDescription || post.title;
+    const articleSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: schemaDescription,
+        url: canonicalUrl,
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': canonicalUrl,
+        },
+        image: [absoluteFeaturedImage],
+        datePublished: publishedIso || undefined,
+        dateModified: updatedIso || undefined,
+        author: {
+            '@type': 'Person',
+            name: post.authorName || 'DodoHabit Team',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'DodoHabit',
+            logo: {
+                '@type': 'ImageObject',
+                url: `${siteUrl}/icon.png`,
+            },
+        },
+    };
     const date = new Date(publishedAt).toLocaleDateString(undefined, {
         weekday: 'long',
         year: 'numeric',
@@ -260,6 +303,10 @@ const BlogPost = () => {
                 description={metaDescription}
                 image={post.featuredImage}
                 type="article"
+                author={post.authorName || 'DodoHabit Team'}
+                publishedTime={publishedIso}
+                modifiedTime={updatedIso}
+                structuredData={articleSchema}
             />
             <div className="fixed top-0 left-0 right-0 z-[95] h-1 bg-[var(--accent-primary)]/15 pointer-events-none">
                 <div
@@ -385,7 +432,7 @@ const BlogPost = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="lg:col-span-8 2xl:col-span-8 w-full max-w-[740px] xl:max-w-[760px] 2xl:max-w-[780px]">
+                <div className="lg:col-span-8 2xl:col-span-8 w-full max-w-[700px] xl:max-w-[700px] 2xl:max-w-[720px]">
                     {toc.length > 0 && (
                         <div className="lg:hidden sticky top-24 z-20 mb-5">
                             <button

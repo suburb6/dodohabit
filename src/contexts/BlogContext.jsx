@@ -100,7 +100,7 @@ export const BlogProvider = ({ children }) => {
     }, [user]);
 
     const getPost = (slug) => {
-        return posts.find(post => post.slug === slug);
+        return posts.find(post => post.slug === slug && post.status === 'published');
     };
 
     const getPostById = (id) => {
