@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUpRight, Menu, Moon, Sun, X } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 const navLinks = [
     { id: '/', label: 'Home' },
@@ -17,7 +16,6 @@ const isLinkActive = (pathname, linkId) => {
 
 const Navbar = () => {
     const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
@@ -63,13 +61,6 @@ const Navbar = () => {
                     </div>
 
                     <div className="hidden md:flex items-center gap-2 ml-auto">
-                        <button
-                            onClick={toggleTheme}
-                            className="w-10 h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
-                            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                        >
-                            {theme === 'dark' ? <Sun size={18} className="mx-auto" /> : <Moon size={18} className="mx-auto" />}
-                        </button>
                         <Link
                             to="/feedback"
                             className="btn-primary px-4 py-2 rounded-xl text-sm font-semibold inline-flex items-center gap-2"
@@ -80,13 +71,6 @@ const Navbar = () => {
                     </div>
 
                     <div className="md:hidden ml-auto flex items-center gap-2">
-                        <button
-                            onClick={toggleTheme}
-                            className="w-10 h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
-                            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                        >
-                            {theme === 'dark' ? <Sun size={18} className="mx-auto" /> : <Moon size={18} className="mx-auto" />}
-                        </button>
                         <button
                             onClick={() => setMobileMenuOpen((prev) => !prev)}
                             className="w-10 h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"

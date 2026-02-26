@@ -9,15 +9,11 @@ import {
     Menu,
     X,
     Settings,
-    MessageSquare,
-    Moon,
-    Sun
+    MessageSquare
 } from 'lucide-react';
-import { useTheme } from '../../contexts/ThemeContext';
 
 const AdminLayout = () => {
     const { logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,7 +40,7 @@ const AdminLayout = () => {
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm 
                 justify-start md:justify-center 2xl:justify-start
                 ${isActive(activeCheck || to)
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-[var(--accent-primary)] text-white shadow-md'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                 }`}
             onClick={() => setIsMobileMenuOpen(false)}
@@ -63,7 +59,7 @@ const AdminLayout = () => {
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 <div className="p-4 flex items-center justify-between md:justify-center 2xl:justify-between h-16">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center font-bold text-lg text-white shrink-0">D</div>
+                        <div className="w-8 h-8 rounded-md bg-[var(--accent-primary)] flex items-center justify-center font-bold text-lg text-white shrink-0">D</div>
                         <span className="font-bold text-xl tracking-tight md:hidden 2xl:block">DodoAdmin</span>
                     </div>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-[var(--text-secondary)]">
@@ -81,14 +77,6 @@ const AdminLayout = () => {
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border-color)] flex flex-col gap-2 bg-[var(--bg-secondary)]">
                     <button
-                        onClick={toggleTheme}
-                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] transition-colors justify-start md:justify-center 2xl:justify-start"
-                        title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                    >
-                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                        <span className="font-medium md:hidden 2xl:block">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                    </button>
-                    <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-colors justify-start md:justify-center 2xl:justify-start"
                         title="Sign Out"
@@ -104,13 +92,10 @@ const AdminLayout = () => {
                 {/* Mobile Header */}
                 <header className="md:hidden flex items-center justify-between p-4 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] sticky top-0 z-40">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-lg text-white">D</div>
+                        <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] flex items-center justify-center font-bold text-lg text-white">D</div>
                         <span className="font-bold text-xl text-[var(--text-primary)]">DodoAdmin</span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={toggleTheme} className="text-[var(--text-secondary)]">
-                            {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-                        </button>
                         <button onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-primary)]">
                             <Menu size={24} />
                         </button>

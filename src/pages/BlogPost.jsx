@@ -230,7 +230,7 @@ const BlogPost = () => {
                 />
                 <h1 className="text-4xl font-bold mb-4 text-[var(--text-primary)]">404</h1>
                 <p className="text-[var(--text-secondary)] mb-8">Post not found</p>
-                <Link to="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+                <Link to="/blog" className="text-[var(--accent-primary)] hover:text-[var(--accent-primary-strong)] flex items-center gap-2">
                     <ArrowLeft size={20} /> Back to Blog
                 </Link>
             </div>
@@ -261,15 +261,15 @@ const BlogPost = () => {
                 image={post.featuredImage}
                 type="article"
             />
-            <div className="fixed top-0 left-0 right-0 z-[95] h-1 bg-blue-500/15 pointer-events-none">
+            <div className="fixed top-0 left-0 right-0 z-[95] h-1 bg-[var(--accent-primary)]/15 pointer-events-none">
                 <div
-                    className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-300 transition-[width] duration-150"
+                    className="h-full bg-gradient-to-r from-[var(--accent-primary-strong)] via-[var(--accent-primary)] to-[var(--accent-secondary)] transition-[width] duration-150"
                     style={{ width: `${Math.max(0, Math.min(100, scrollProgress * 100))}%` }}
                 />
             </div>
             {/* Header */}
             {/* Header */}
-            <header className="max-w-5xl mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 mb-14 text-center pt-8">
+            <header className="max-w-4xl mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 mb-14 text-center pt-8">
 
                 <h1 className="text-4xl md:text-6xl font-extrabold text-[var(--text-primary)] leading-tight mb-8">
                     {post.title}
@@ -277,15 +277,15 @@ const BlogPost = () => {
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-[var(--text-secondary)] text-sm md:text-base">
                     <div className="flex items-center gap-2">
-                        <Calendar size={18} className="text-blue-500" />
+                        <Calendar size={18} className="text-[var(--accent-primary)]" />
                         <span>{date}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Clock size={18} className="text-blue-500" />
+                        <Clock size={18} className="text-[var(--accent-primary)]" />
                         <span>{stats.text}</span>
                     </div>
                     {showUpdated && (
-                        <div className="text-gray-600 text-xs mt-1 w-full">
+                        <div className="text-[var(--text-secondary)] text-xs mt-1 w-full">
                             Last updated: {new Date(updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
                     )}
@@ -327,7 +327,7 @@ const BlogPost = () => {
                                                 href={post.featuredImageCredit}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-500 hover:underline"
+                                                className="text-[var(--accent-primary)] hover:underline"
                                             >
                                                 {new URL(post.featuredImageCredit).hostname.replace('www.', '')}
                                             </a>
@@ -343,7 +343,7 @@ const BlogPost = () => {
             )}
 
             {/* Content & Sidebar */}
-            <div className="max-w-[1700px] mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 grid grid-cols-1 lg:grid-cols-12 gap-12 2xl:gap-20">
+            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 lg:px-12 xl:px-16 grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-12 2xl:gap-14">
                 {/* Table of Contents - Desktop Sidebar */}
                 <div className="hidden lg:block lg:col-span-3">
                     <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl mb-8">
@@ -354,7 +354,7 @@ const BlogPost = () => {
                                 className="w-12 h-12 rounded-full object-cover shadow-lg shrink-0"
                             />
                         ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
                                 <span className="font-bold text-lg">{post.authorName ? post.authorName.charAt(0) : 'D'}</span>
                             </div>
                         )}
@@ -365,7 +365,7 @@ const BlogPost = () => {
                     </div>
 
                     <div className="sticky top-32 space-y-4">
-                        <h3 className="text-base font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-4">
+                        <h3 className="text-xs font-extrabold text-[var(--text-secondary)] uppercase tracking-[0.18em] mb-3">
                             Table of Contents
                         </h3>
                         {toc.length > 0 ? (
@@ -375,17 +375,17 @@ const BlogPost = () => {
                                 onNavigate={navigateToSection}
                             />
                         ) : (
-                            <p className="text-sm text-gray-600 italic">No sections found</p>
+                            <p className="text-sm text-[var(--text-secondary)] italic">No sections found</p>
                         )}
 
-                        <div className="pt-8">
+                        <div className="pt-4">
                             <ShareButtons title={post.title} url={window.location.href} />
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="lg:col-span-8 2xl:col-span-8 w-full max-w-[860px] 2xl:max-w-[900px]">
+                <div className="lg:col-span-8 2xl:col-span-8 w-full max-w-[740px] xl:max-w-[760px] 2xl:max-w-[780px]">
                     {toc.length > 0 && (
                         <div className="lg:hidden sticky top-24 z-20 mb-5">
                             <button
@@ -394,7 +394,7 @@ const BlogPost = () => {
                                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/95 backdrop-blur-md px-4 py-3 text-left text-sm text-[var(--text-primary)] shadow-xl"
                             >
                                 <span className="inline-flex items-center gap-2 font-semibold">
-                                    <List size={16} className="text-blue-500" />
+                                    <List size={16} className="text-[var(--accent-primary)]" />
                                     Table of Contents
                                 </span>
                                 {activeId && (
@@ -407,14 +407,15 @@ const BlogPost = () => {
                     )}
 
                     <div
-                        className="prose dark:prose-invert prose-base sm:prose-lg max-w-none
+                        className="prose prose-base lg:prose-lg max-w-none
                         prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:scroll-mt-32
                         prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
                         prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-                        prose-p:text-[var(--text-secondary)] prose-p:leading-8 prose-p:mb-6
-                        prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+                        prose-p:text-[var(--text-secondary)] prose-p:leading-7 prose-p:mb-6
+                        prose-a:text-[var(--accent-primary)] prose-a:no-underline hover:prose-a:text-[var(--accent-primary-strong)] hover:prose-a:underline
                         prose-strong:text-[var(--text-primary)] prose-strong:font-bold
-                        prose-code:text-blue-600 dark:prose-code:text-blue-300 prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+                        prose-code:text-[var(--accent-primary)] prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+                        prose-blockquote:border-l-[var(--accent-primary)] prose-blockquote:text-[var(--text-secondary)]
                         prose-li:text-[var(--text-secondary)]
                         "
                         dangerouslySetInnerHTML={{ __html: processedContent || post.content }}

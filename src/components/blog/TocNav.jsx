@@ -7,7 +7,7 @@ const TocNav = ({ items, activeId, onNavigate }) => {
     if (!items || items.length === 0) return null;
 
     return (
-        <nav className="space-y-1">
+        <nav className="space-y-1 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/75 p-2">
             {items.map((item) => {
                 const isActive = activeId === item.id;
                 const isSub = isSubLevel(item.level);
@@ -16,9 +16,9 @@ const TocNav = ({ items, activeId, onNavigate }) => {
                     <a
                         key={item.id}
                         href={`#${item.id}`}
-                        className={`relative z-0 block rounded-lg py-2 text-sm transition-colors border-l-2
-                            ${isSub ? 'ml-2 pl-6 text-[var(--text-secondary)] border-transparent' : 'pl-4 text-[var(--text-primary)] border-[var(--border-color)]'}
-                            ${isActive ? 'text-[var(--text-primary)] border-blue-500' : (isSub ? 'hover:text-[var(--text-primary)]' : 'hover:border-blue-500')}
+                        className={`relative z-0 block rounded-xl py-2.5 text-sm transition-colors border
+                            ${isSub ? 'ml-2 pl-7 text-[var(--text-secondary)] border-transparent' : 'pl-4 font-medium text-[var(--text-primary)] border-transparent'}
+                            ${isActive ? 'text-[var(--text-primary)] border-[var(--accent-primary)]' : 'hover:text-[var(--text-primary)] hover:border-[var(--border-color)]'}
                         `}
                         onClick={(e) => {
                             e.preventDefault();
@@ -29,12 +29,12 @@ const TocNav = ({ items, activeId, onNavigate }) => {
                         {isActive && (
                             <motion.span
                                 layoutId="toc-magnet"
-                                className="absolute inset-0 z-0 rounded-lg bg-blue-500/10 border border-blue-500/40 shadow-[0_0_16px_rgba(59,130,246,0.25)]"
+                                className="absolute inset-0 z-0 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--accent-primary)]"
                                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                             />
                         )}
                         {isSub && (
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-blue-500/70 z-10" />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)] z-10" />
                         )}
                         <span className="relative z-10 line-clamp-2">{item.text}</span>
                     </a>

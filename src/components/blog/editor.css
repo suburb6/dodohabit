@@ -31,17 +31,17 @@
 }
 
 .ProseMirror blockquote {
-    border-left: 4px solid #3b82f6;
+    border-left: 4px solid var(--accent-primary);
     margin-left: 0;
     margin-right: 0;
     padding-left: 1rem;
     font-style: italic;
-    color: #9ca3af;
+    color: var(--text-secondary);
 }
 
 .ProseMirror hr {
     border: none;
-    border-top: 1px solid #374151;
+    border-top: 1px solid var(--border-color);
     margin: 2rem 0;
 }
 
@@ -66,14 +66,14 @@
 
 .ProseMirror th,
 .prose th {
-    background: color-mix(in srgb, var(--bg-secondary) 85%, #2563eb 15%);
+    background: color-mix(in srgb, var(--bg-secondary) 86%, var(--accent-primary) 14%);
     color: var(--text-primary);
     font-weight: 700;
 }
 
 .ProseMirror table[data-design="zebra"] tbody tr:nth-child(odd) td,
 .prose table[data-design="zebra"] tbody tr:nth-child(odd) td {
-    background: color-mix(in srgb, var(--bg-secondary) 80%, #2563eb 8%);
+    background: color-mix(in srgb, var(--bg-secondary) 86%, var(--accent-secondary) 14%);
 }
 
 .ProseMirror table[data-design="minimal"],
@@ -96,19 +96,19 @@
 
 .ProseMirror table[data-design="accent"],
 .prose table[data-design="accent"] {
-    border-color: rgba(59, 130, 246, 0.45);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.15) inset;
+    border-color: rgba(44, 102, 110, 0.45);
+    box-shadow: 0 0 0 1px rgba(44, 102, 110, 0.15) inset;
 }
 
 .ProseMirror table[data-design="accent"] th,
 .prose table[data-design="accent"] th {
-    background: linear-gradient(120deg, rgba(37, 99, 235, 0.28), rgba(34, 211, 238, 0.16));
-    color: #dbeafe;
+    background: linear-gradient(120deg, rgba(44, 102, 110, 0.22), rgba(144, 221, 240, 0.2));
+    color: var(--text-primary);
 }
 
 .ProseMirror table[data-design="accent"] td,
 .prose table[data-design="accent"] td {
-    border-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(44, 102, 110, 0.28);
 }
 
 .ProseMirror .tableWrapper {
@@ -122,7 +122,7 @@
     top: 0;
     bottom: -2px;
     width: 4px;
-    background: #3b82f6;
+    background: var(--accent-primary);
     opacity: 0.4;
     pointer-events: none;
 }
@@ -131,7 +131,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(59, 130, 246, 0.08);
+    background: rgba(44, 102, 110, 0.08);
     pointer-events: none;
 }
 
@@ -178,9 +178,9 @@
 }
 
 .ProseMirror .tiptap-image-node.is-selected .tiptap-image-node__frame {
-    outline: 2px solid rgba(59, 130, 246, 0.75);
+    outline: 2px solid rgba(44, 102, 110, 0.75);
     outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+    box-shadow: 0 0 0 4px rgba(44, 102, 110, 0.18);
 }
 
 .ProseMirror .tiptap-image-node__handle {
@@ -188,8 +188,8 @@
     width: 12px;
     height: 12px;
     border-radius: 999px;
-    border: 1px solid #93c5fd;
-    background: #2563eb;
+    border: 1px solid rgba(144, 221, 240, 0.8);
+    background: var(--accent-primary);
     box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.65);
     z-index: 3;
     padding: 0;
@@ -246,7 +246,7 @@ body.is-resizing-image {
 }
 
 .ProseMirror a {
-    color: #60a5fa;
+    color: var(--accent-primary);
     text-decoration: underline;
     cursor: pointer;
 }
@@ -270,9 +270,9 @@ body.is-resizing-image {
 
 /* Main Level Badge (Blue) */
 .ProseMirror .toc-anchor-marker[data-level="main"] {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.12);
-    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: var(--accent-primary);
+    background: rgba(44, 102, 110, 0.12);
+    border: 1px solid rgba(44, 102, 110, 0.25);
 }
 
 .ProseMirror .toc-anchor-marker[data-level="main"]::before {
@@ -281,9 +281,9 @@ body.is-resizing-image {
 
 /* Sub Level Badge (Purple) */
 .ProseMirror .toc-anchor-marker[data-level="sub"] {
-    color: #a855f7;
-    background: rgba(168, 85, 247, 0.12);
-    border: 1px solid rgba(168, 85, 247, 0.25);
+    color: var(--accent-primary-strong);
+    background: rgba(144, 221, 240, 0.2);
+    border: 1px solid rgba(44, 102, 110, 0.22);
 }
 
 .ProseMirror .toc-anchor-marker[data-level="sub"]::before {
@@ -294,8 +294,8 @@ body.is-resizing-image {
     content: "SUB";
     margin-left: 8px;
     font-size: 9px;
-    background: #a855f7;
-    color: white;
+    background: var(--accent-primary);
+    color: #fff;
     padding: 1px 5px;
     border-radius: 4px;
     vertical-align: middle;
@@ -356,8 +356,8 @@ body.is-resizing-image {
 .prose .dodohabit-app-card {
     margin: 1.25rem 0;
     border-radius: 14px;
-    border: 1px solid rgba(59, 130, 246, 0.35);
-    background: linear-gradient(120deg, rgba(37, 99, 235, 0.18), rgba(34, 211, 238, 0.1));
+    border: 1px solid rgba(44, 102, 110, 0.32);
+    background: linear-gradient(120deg, rgba(44, 102, 110, 0.14), rgba(144, 221, 240, 0.1));
     padding: 14px;
     display: flex;
     align-items: center;
@@ -369,7 +369,7 @@ body.is-resizing-image {
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #2563eb, #22d3ee);
+    background: linear-gradient(135deg, var(--accent-primary-strong), var(--accent-primary));
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -403,9 +403,9 @@ body.is-resizing-image {
 .ProseMirror .dodohabit-app-card__cta,
 .prose .dodohabit-app-card__cta {
     border-radius: 999px;
-    border: 1px solid rgba(96, 165, 250, 0.35);
-    background: rgba(37, 99, 235, 0.2);
-    color: #bfdbfe;
+    border: 1px solid rgba(44, 102, 110, 0.32);
+    background: rgba(44, 102, 110, 0.12);
+    color: var(--accent-primary-strong);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -424,9 +424,9 @@ body.is-resizing-image {
     line-height: 1;
     white-space: nowrap;
     border-radius: 999px;
-    border: 1px solid rgba(96, 165, 250, 0.45);
-    background: linear-gradient(120deg, rgba(37, 99, 235, 0.22), rgba(34, 211, 238, 0.16));
-    color: #dbeafe !important;
+    border: 1px solid rgba(44, 102, 110, 0.36);
+    background: linear-gradient(120deg, rgba(44, 102, 110, 0.18), rgba(144, 221, 240, 0.16));
+    color: var(--accent-primary-strong) !important;
     font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.05em;

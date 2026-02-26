@@ -7,7 +7,7 @@ import SEO from '../components/SEO';
 
 const Terms = () => {
     return (
-        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-[var(--accent-primary)] selection:text-white flex flex-col transition-colors duration-300">
             <SEO
                 title="Terms and Conditions"
                 description="Read DodoHabit's terms and conditions for using the app and related services."
@@ -32,7 +32,7 @@ const Terms = () => {
                         </p>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">1. Acceptance of Terms & Eligibility</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">1. Acceptance of Terms & Eligibility</h2>
                             <p className="mb-4">By accessing DodoHabit, you agree to these Terms.</p>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>Age Requirement:</strong> You must be at least 13 years of age to use this App.</li>
@@ -41,7 +41,7 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">2. No Medical Advice (CRITICAL)</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">2. No Medical Advice (CRITICAL)</h2>
                             <p className="mb-4">
                                 <strong className="text-[var(--text-primary)]">DODOHABIT IS A PRODUCTIVITY TOOL ONLY.</strong> It is not a medical device and does not provide medical advice, diagnosis, or treatment.
                             </p>
@@ -74,7 +74,7 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">6. Limitation of Liability</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">6. Limitation of Liability</h2>
                             <p className="mb-4 text-[var(--text-secondary)] font-bold">TO THE MAXIMUM EXTENT PERMITTED BY LAW, DODOHABIT IS PROVIDED "AS IS." WE ARE NOT LIABLE FOR:</p>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>SENSOR INACCURACY:</strong> Errors in step counting or motion detection.</li>
@@ -85,7 +85,7 @@ const Terms = () => {
                         </section>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">7. Account Termination & Deletion</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">7. Account Termination & Deletion</h2>
                             <p>
                                 We reserve the right to terminate accounts that misuse the service. You may delete your account and all associated cloud data at any time via the "Delete Account" button in Settings.
                             </p>
@@ -111,7 +111,7 @@ const Terms = () => {
                         <section className="mb-10">
                             <h2 className="text-2xl font-bold text-white mb-4">10. Contact</h2>
                             <p>
-                                Support & Feedback: <a href="mailto:dodohabitapp@gmail.com" className="text-blue-400 hover:underline">dodohabitapp@gmail.com</a>
+                                Support & Feedback: <a href="mailto:dodohabitapp@gmail.com" className="text-[var(--accent-primary)] hover:underline">dodohabitapp@gmail.com</a>
                             </p>
                         </section>
 

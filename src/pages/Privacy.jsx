@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 
 const Privacy = () => {
     return (
-        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-[var(--accent-primary)] selection:text-white flex flex-col transition-colors duration-300">
             <SEO
                 title="Privacy Policy"
                 description="Read DodoHabit's privacy policy, including what data we collect and how it's used."
@@ -32,7 +32,7 @@ const Privacy = () => {
 
                         {/* Section 1 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">1. Information We Collect</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">1. Information We Collect</h2>
 
                             <h3 className="text-xl font-semibold text-[var(--text-primary)] mt-6 mb-3">a. Account Information</h3>
                             <ul className="list-disc pl-6 space-y-2 mb-4">
@@ -60,7 +60,7 @@ const Privacy = () => {
 
                         {/* Section 2 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">2. How We Use Your Information</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">2. How We Use Your Information</h2>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li>To provide and improve the App's features.</li>
                                 <li>To sync your data across devices (if signed in).</li>
@@ -71,7 +71,7 @@ const Privacy = () => {
 
                         {/* Section 3 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">3. Data Storage, Security & Residency</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">3. Data Storage, Security & Residency</h2>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong className="text-[var(--text-primary)]">Cloud Storage:</strong> If you sign in, your data is stored securely in Google Firebase (Firestore). Our cloud services are hosted in the United States. By using the sign-in feature, you consent to this transfer.</li>
                                 <li><strong className="text-[var(--text-primary)]">Local Storage:</strong> Guest data is stored only on your device and is not uploaded to our servers.</li>
@@ -81,15 +81,15 @@ const Privacy = () => {
 
                         {/* Section 4 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">4. Your Rights (GDPR/CCPA)</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">4. Your Rights (GDPR/CCPA)</h2>
                             <p>
-                                Depending on your location, you may have the right to access, port, or delete your personal data. You can exercise these rights directly through the in-app deletion tools or by contacting us at <a href="mailto:dodohabitapp@gmail.com" className="text-blue-400 hover:underline">dodohabitapp@gmail.com</a>.
+                                Depending on your location, you may have the right to access, port, or delete your personal data. You can exercise these rights directly through the in-app deletion tools or by contacting us at <a href="mailto:dodohabitapp@gmail.com" className="text-[var(--accent-primary)] hover:underline">dodohabitapp@gmail.com</a>.
                             </p>
                         </section>
 
                         {/* Section 5 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">5. Data Sharing</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">5. Data Sharing</h2>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li>We do <strong className="text-[var(--text-primary)]">not</strong> sell, rent, or share your personal data with third parties.</li>
                                 <li>Data is shared with authentication providers (Google/Apple) only to facilitate the sign-in process.</li>
@@ -114,9 +114,9 @@ const Privacy = () => {
 
                         {/* Section 8 */}
                         <section className="mb-10">
-                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-blue-500 pl-4 uppercase tracking-tight">8. Contact Us</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 border-l-4 border-[var(--accent-primary)] pl-4 uppercase tracking-tight">8. Contact Us</h2>
                             <p>
-                                If you have any questions, please contact us at: <a href="mailto:dodohabitapp@gmail.com" className="text-blue-400 hover:underline">dodohabitapp@gmail.com</a>
+                                If you have any questions, please contact us at: <a href="mailto:dodohabitapp@gmail.com" className="text-[var(--accent-primary)] hover:underline">dodohabitapp@gmail.com</a>
                             </p>
                         </section>
 

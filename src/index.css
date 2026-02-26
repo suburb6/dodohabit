@@ -5,45 +5,30 @@
 @layer base {
   :root {
     --font-display: "Sora", "Outfit", sans-serif;
-    --bg-primary: #f6f4ed;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #ecf1ea;
-    --bg-canvas-start: #f7f3e9;
-    --bg-canvas-end: #e5f2ed;
-    --canvas-glow-a: rgba(15, 118, 110, 0.12);
-    --canvas-glow-b: rgba(217, 119, 6, 0.1);
-    --text-primary: #11232b;
-    --text-secondary: #4f626d;
-    --border-color: #d4ddd8;
-    --accent-primary: #0f766e;
-    --accent-primary-strong: #115e59;
-    --accent-secondary: #d97706;
-    --accent-ring: rgba(15, 118, 110, 0.28);
+    --palette-onyx: #0A090C;
+    --palette-platinum: #F0EDEE;
+    --palette-dark-teal: #07393C;
+    --palette-stormy-teal: #2C666E;
+    --palette-frosted-blue: #90DDF0;
+    --bg-primary: var(--palette-platinum);
+    --bg-secondary: color-mix(in srgb, var(--palette-platinum) 94%, var(--palette-frosted-blue) 6%);
+    --bg-tertiary: color-mix(in srgb, var(--palette-platinum) 84%, var(--palette-frosted-blue) 16%);
+    --bg-canvas-start: color-mix(in srgb, var(--palette-platinum) 90%, var(--palette-frosted-blue) 10%);
+    --bg-canvas-end: color-mix(in srgb, var(--palette-platinum) 78%, var(--palette-stormy-teal) 22%);
+    --canvas-glow-a: rgba(7, 57, 60, 0.12);
+    --canvas-glow-b: rgba(44, 102, 110, 0.1);
+    --text-primary: var(--palette-onyx);
+    --text-secondary: color-mix(in srgb, var(--palette-onyx) 58%, var(--palette-stormy-teal) 42%);
+    --border-color: color-mix(in srgb, var(--palette-stormy-teal) 26%, var(--palette-platinum) 74%);
+    --accent-primary: var(--palette-stormy-teal);
+    --accent-primary-strong: var(--palette-dark-teal);
+    --accent-secondary: var(--palette-frosted-blue);
+    --accent-ring: rgba(44, 102, 110, 0.28);
+    color-scheme: light;
   }
 
   .shadow-soft {
     box-shadow: 0 20px 45px -32px rgba(8, 22, 32, 0.35);
-  }
-
-  :root.dark {
-    --bg-primary: #0c1217;
-    --bg-secondary: #121b22;
-    --bg-tertiary: #1a2530;
-    --bg-canvas-start: #070d13;
-    --bg-canvas-end: #11202a;
-    --canvas-glow-a: rgba(45, 212, 191, 0.12);
-    --canvas-glow-b: rgba(251, 146, 60, 0.08);
-    --text-primary: #f1f7fb;
-    --text-secondary: #9eb0b8;
-    --border-color: #253540;
-    --accent-primary: #2dd4bf;
-    --accent-primary-strong: #0d9488;
-    --accent-secondary: #fb923c;
-    --accent-ring: rgba(45, 212, 191, 0.32);
-  }
-
-  :root.dark .shadow-soft {
-    box-shadow: 0 24px 52px -34px rgba(2, 8, 13, 0.85);
   }
 
   body {

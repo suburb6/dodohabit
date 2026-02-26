@@ -135,7 +135,7 @@ const Feedback = () => {
     };
 
     return (
-        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-blue-500 selection:text-white flex flex-col transition-colors duration-300">
+        <div className="min-h-screen text-[var(--text-primary)] font-sans selection:bg-[var(--accent-primary)] selection:text-white flex flex-col transition-colors duration-300">
             <SEO
                 title="Feedback"
                 description="Send feedback, ideas, or bug reports to help improve DodoHabit."
@@ -170,7 +170,7 @@ const Feedback = () => {
                                     setDone(false);
                                     setErrors({});
                                 }}
-                                className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 transition-colors"
+                                className="inline-flex items-center justify-center rounded-xl btn-primary text-white font-semibold px-5 py-2.5"
                             >
                                 Send Another Feedback
                             </button>
@@ -186,7 +186,7 @@ const Feedback = () => {
                             <input
                                 value={form.name}
                                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
                                 placeholder="Your name"
                                 required
                             />
@@ -202,7 +202,7 @@ const Feedback = () => {
                             <input
                                 value={form.email}
                                 onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
                                 placeholder="you@example.com"
                                 type="email"
                                 required
@@ -222,7 +222,7 @@ const Feedback = () => {
                             <textarea
                                 value={form.message}
                                 onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
-                                className="w-full min-h-[160px] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors resize-y"
+                                className="w-full min-h-[160px] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors resize-y"
                                 placeholder="Tell us what is working, what is not, and what should be improved."
                                 required
                             />
@@ -247,7 +247,7 @@ const Feedback = () => {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3 transition-colors"
+                            className="w-full rounded-xl btn-primary disabled:opacity-50 text-white font-semibold py-3"
                         >
                             {submitting ? 'Sending...' : 'Send Feedback'}
                         </button>

@@ -28,7 +28,7 @@ const DeleteAccount = () => {
                         {/* Section 1: How to Delete */}
                         <section className="bg-[var(--bg-secondary)] p-8 rounded-2xl border border-[var(--border-color)]">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
-                                <Mail className="text-blue-400" />
+                                <Mail className="text-[var(--accent-primary)]" />
                                 How to Request Deletion
                             </h2>
                             <p className="mb-6">

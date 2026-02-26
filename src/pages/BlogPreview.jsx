@@ -193,11 +193,11 @@ const BlogPreview = () => {
 
                 <div className="flex flex-wrap items-center justify-center gap-6 text-[var(--text-secondary)] text-sm md:text-base">
                     <div className="flex items-center gap-2">
-                        <Calendar size={18} className="text-blue-500" />
+                        <Calendar size={18} className="text-[var(--accent-primary)]" />
                         <span>{date}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Clock size={18} className="text-blue-500" />
+                        <Clock size={18} className="text-[var(--accent-primary)]" />
                         <span>{stats.text}</span>
                     </div>
                 </div>
@@ -222,7 +222,7 @@ const BlogPreview = () => {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="max-w-[1480px] mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-12">
                 <div className="hidden lg:block lg:col-span-3">
                     <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl mb-8">
                         {post.authorImage ? (
@@ -232,7 +232,7 @@ const BlogPreview = () => {
                                 className="w-12 h-12 rounded-full object-cover shadow-lg shrink-0"
                             />
                         ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-full flex items-center justify-center text-white shadow-lg shrink-0">
                                 <span className="font-bold text-lg">{post.authorName ? post.authorName.charAt(0) : 'D'}</span>
                             </div>
                         )}
@@ -243,7 +243,7 @@ const BlogPreview = () => {
                     </div>
 
                     <div className="sticky top-32 space-y-4">
-                        <h3 className="text-base font-extrabold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Table of Contents</h3>
+                        <h3 className="text-xs font-extrabold text-[var(--text-secondary)] uppercase tracking-[0.18em] mb-3">Table of Contents</h3>
                         {toc.length > 0 && (
                             <TocNav
                                 items={toc}
@@ -257,9 +257,9 @@ const BlogPreview = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-8 w-full max-w-[740px] xl:max-w-[760px] 2xl:max-w-[780px]">
                     <div
-                        className="prose dark:prose-invert prose-lg max-w-none prose-headings:text-[var(--text-primary)] prose-headings:scroll-mt-32 prose-p:text-[var(--text-secondary)] prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-[var(--text-primary)] prose-code:text-blue-600 dark:prose-code:text-blue-300 prose-li:text-[var(--text-secondary)]"
+                        className="prose prose-base lg:prose-lg max-w-none prose-headings:text-[var(--text-primary)] prose-headings:scroll-mt-32 prose-p:text-[var(--text-secondary)] prose-a:text-[var(--accent-primary)] hover:prose-a:text-[var(--accent-primary-strong)] prose-strong:text-[var(--text-primary)] prose-code:text-[var(--accent-primary)] prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-li:text-[var(--text-secondary)] prose-blockquote:border-l-[var(--accent-primary)] prose-blockquote:text-[var(--text-secondary)]"
                         dangerouslySetInnerHTML={{ __html: processedContent || contentForPreview }}
                     />
                     <hr className="border-[var(--border-color)] my-12" />
