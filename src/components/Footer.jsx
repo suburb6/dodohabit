@@ -13,13 +13,6 @@ const Footer = () => {
             src: 'https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1087005&theme=light&t=1772206256996',
             alt: 'DodoHabit - Build Better Habits: One Day or Day One? | Product Hunt',
         },
-        {
-            href: 'https://acidtools.com',
-            src: 'https://acidtools.com/assets/images/badge.png',
-            alt: 'Acid Tools',
-            imgHeight: 54,
-            noRel: true,
-        },
     ];
 
     return (
@@ -68,45 +61,22 @@ const Footer = () => {
 
                         <div className="w-full overflow-x-auto thin-scrollbar">
                             <div className="mx-auto flex w-fit min-w-max items-center justify-center gap-3 px-1">
-                                {earnedBadges.map((badge) => {
-                                    if (!badge.noRel) {
-                                        return (
-                                            <a
-                                                key={badge.href}
-                                                href={badge.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 transition-colors hover:border-[var(--accent-primary)]"
-                                            >
-                                                <img
-                                                    src={badge.src}
-                                                    alt={badge.alt}
-                                                    height={badge.imgHeight}
-                                                    className="h-7 w-auto object-contain"
-                                                    loading="lazy"
-                                                />
-                                            </a>
-                                        );
-                                    }
-
-                                    return (
-                                        // eslint-disable-next-line react/jsx-no-target-blank
-                                        <a
-                                            key={badge.href}
-                                            href={badge.href}
-                                            target="_blank"
-                                            className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 transition-colors hover:border-[var(--accent-primary)]"
-                                        >
-                                            <img
-                                                src={badge.src}
-                                                alt={badge.alt}
-                                                height={badge.imgHeight}
-                                                className="h-7 w-auto object-contain"
-                                                loading="lazy"
-                                            />
-                                        </a>
-                                    );
-                                })}
+                                {earnedBadges.map((badge) => (
+                                    <a
+                                        key={badge.href}
+                                        href={badge.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex h-12 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 transition-colors hover:border-[var(--accent-primary)]"
+                                    >
+                                        <img
+                                            src={badge.src}
+                                            alt={badge.alt}
+                                            className="h-7 w-auto object-contain"
+                                            loading="lazy"
+                                        />
+                                    </a>
+                                ))}
                             </div>
                         </div>
                     </div>
