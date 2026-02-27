@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -36,9 +35,21 @@ const Footer = () => {
                     </Link>
                 </div>
 
-                <div className="mt-10 pt-6 border-t border-[var(--border-color)] text-xs text-[var(--text-secondary)] flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
-                    <span>© 2026 Dodohabit Inc.</span>
-                    <span>Designed for calm consistency.</span>
+                <div className="mt-10 pt-6 border-t border-[var(--border-color)] text-xs text-[var(--text-secondary)] flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+                        <span>© 2026 Dodohabit Inc.</span>
+                        <span>Designed for calm consistency.</span>
+                    </div>
+
+                    <a href="https://open-launch.com/projects/dodohabit" target="_blank" rel="noopener noreferrer" className="w-fit">
+                        <img
+                            src="https://open-launch.com/api/badge/dc6904f3-0348-4d01-be95-1e27f5fd315d/featured-minimal.svg"
+                            alt="Featured on Open-Launch"
+                            width="150"
+                            height="32"
+                            loading="lazy"
+                        />
+                    </a>
                 </div>
             </div>
         </footer>
