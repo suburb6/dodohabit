@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Clock, Calendar } from 'lucide-react';
 import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import '../components/blog/editor.css';
 import TocNav from '../components/blog/TocNav';
+import ProductHuntPromoCard from '../components/blog/ProductHuntPromoCard';
 
 const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const slugifyForId = (value) =>
@@ -263,6 +263,7 @@ const BlogPreview = () => {
                         className="prose prose-base lg:prose-lg max-w-none prose-headings:text-[var(--text-primary)] prose-headings:scroll-mt-32 prose-p:text-[var(--text-secondary)] prose-a:text-[var(--accent-primary)] hover:prose-a:text-[var(--accent-primary-strong)] prose-strong:text-[var(--text-primary)] prose-code:text-[var(--accent-primary)] prose-code:bg-[var(--bg-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-li:text-[var(--text-secondary)] prose-blockquote:border-l-[var(--accent-primary)] prose-blockquote:text-[var(--text-secondary)]"
                         dangerouslySetInnerHTML={{ __html: processedContent || contentForPreview }}
                     />
+                    <ProductHuntPromoCard className="mt-10" />
                     <hr className="border-[var(--border-color)] my-12" />
                 </div>
             </div>

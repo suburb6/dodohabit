@@ -41,15 +41,32 @@ const Footer = () => {
                         <span>Designed for calm consistency.</span>
                     </div>
 
-                    <a href="https://open-launch.com/projects/dodohabit" target="_blank" rel="noopener noreferrer" className="w-fit">
-                        <img
-                            src="https://open-launch.com/api/badge/dc6904f3-0348-4d01-be95-1e27f5fd315d/featured-minimal.svg"
-                            alt="Featured on Open-Launch"
-                            width="150"
-                            height="32"
-                            loading="lazy"
-                        />
-                    </a>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <a href="https://open-launch.com/projects/dodohabit" target="_blank" rel="noopener noreferrer" className="w-fit">
+                            <img
+                                src="https://open-launch.com/api/badge/dc6904f3-0348-4d01-be95-1e27f5fd315d/featured-minimal.svg"
+                                alt="Featured on Open-Launch"
+                                width="150"
+                                height="32"
+                                loading="lazy"
+                            />
+                        </a>
+
+                        <a
+                            href="https://www.producthunt.com/products/dodohabit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-dodohabit"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-fit"
+                        >
+                            <img
+                                alt="DodoHabit - Build Better Habits: One Day or Day One? | Product Hunt"
+                                width="250"
+                                height="54"
+                                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1087005&theme=light&t=1772206256996"
+                                loading="lazy"
+                            />
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlog } from '../contexts/BlogContext';
 import ShareButtons from '../components/blog/ShareButtons';
@@ -7,6 +7,7 @@ import { readingTime } from 'reading-time-estimator';
 import SEO from '../components/SEO';
 import '../components/blog/editor.css'; // Reuse editor styles for content
 import TocNav from '../components/blog/TocNav';
+import ProductHuntPromoCard from '../components/blog/ProductHuntPromoCard';
 
 const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const slugifyForId = (value) =>
@@ -109,7 +110,7 @@ const BlogPost = () => {
             });
 
             if (imageBadges.length > 0) {
-                div.querySelectorAll('img').forEach((img, imageIndex) => {
+                div.querySelectorAll('img').forEach((img) => {
                     if (!(img instanceof HTMLImageElement)) return;
                     if (img.closest('.content-image-frame')) return;
                     const frame = document.createElement('figure');
@@ -467,6 +468,8 @@ const BlogPost = () => {
                         "
                         dangerouslySetInnerHTML={{ __html: processedContent || post.content }}
                     />
+
+                    <ProductHuntPromoCard className="mt-10" />
 
                     <hr className="border-[var(--border-color)] my-12" />
 
