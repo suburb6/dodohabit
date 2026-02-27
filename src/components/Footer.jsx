@@ -13,6 +13,11 @@ const Footer = () => {
             src: 'https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1087005&theme=light&t=1772206256996',
             alt: 'DodoHabit - Build Better Habits: One Day or Day One? | Product Hunt',
         },
+        {
+            href: 'https://dang.ai/',
+            src: 'https://cdn.prod.website-files.com/63d8afd87da01fb58ea3fbcb/6487e2868c6c8f93b4828827_dang-badge.png',
+            alt: 'Dang.ai',
+        },
     ];
 
     return (
