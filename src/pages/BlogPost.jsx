@@ -8,6 +8,7 @@ import SEO from '../components/SEO';
 import '../components/blog/editor.css'; // Reuse editor styles for content
 import TocNav from '../components/blog/TocNav';
 import ProductHuntPromoCard from '../components/blog/ProductHuntPromoCard';
+import { PLAY_STORE_APP_URL } from '../constants/externalLinks';
 
 const normalizeLabel = (value) => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const slugifyForId = (value) =>
@@ -57,6 +58,12 @@ const BlogPost = () => {
             // Create a temporary DOM element to parse HTML
             const div = document.createElement('div');
             div.innerHTML = post.content;
+            div.querySelectorAll('a.dodohabit-install-btn, a[href^="https://play.google.com/store"]').forEach((link) => {
+                if (!(link instanceof HTMLAnchorElement)) return;
+                link.setAttribute('href', PLAY_STORE_APP_URL);
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
             const imageBadges = (Array.isArray(post.featuredBadges) ? post.featuredBadges : [])
                 .map((badge) => (badge || '').trim())
                 .filter(Boolean)

@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import { useBlog } from '../contexts/BlogContext';
 import BlogCard from '../components/blog/BlogCard';
 import { formatBlogDate } from '../utils/dateFormat';
+import { PLAY_STORE_APP_URL } from '../constants/externalLinks';
 
 const toPlainText = (html) => (html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -171,10 +172,15 @@ const Blog = () => {
                     DodoHabit’s mobile experience is built for daily follow-through.
                 </p>
                 <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                    <button className="btn-secondary rounded-xl px-5 py-3 font-semibold inline-flex items-center gap-2">
+                    <a
+                        href={PLAY_STORE_APP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary rounded-xl px-5 py-3 font-semibold inline-flex items-center gap-2"
+                    >
                         <Play size={17} className="text-[var(--accent-primary)]" />
                         Google Play
-                    </button>
+                    </a>
                     <button className="btn-secondary rounded-xl px-5 py-3 font-semibold inline-flex items-center gap-2">
                         <Smartphone size={17} className="text-[var(--accent-primary)]" />
                         App Store

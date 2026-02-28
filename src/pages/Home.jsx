@@ -1,6 +1,7 @@
 import React from 'react';
 import SEO from '../components/SEO';
 import { Apple } from 'lucide-react';
+import { PLAY_STORE_APP_URL } from '../constants/externalLinks';
 
 import mock11 from '../assets/screenshots/11.jpg';
 import mock22 from '../assets/screenshots/22.jpg';
@@ -61,9 +62,14 @@ const Home = () => {
                 </section>
 
                 <section className="mt-10 text-center">
-                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-[var(--text-secondary)] mb-4">Coming Soon</p>
+                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-[var(--text-secondary)] mb-4">Now Live</p>
                     <div className="flex flex-wrap items-center justify-center gap-4">
-                        <button className="surface-card rounded-xl px-5 py-3 inline-flex items-center gap-3 text-left hover:border-[var(--accent-primary)] transition-colors">
+                        <a
+                            href={PLAY_STORE_APP_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="surface-card rounded-xl px-5 py-3 inline-flex items-center gap-3 text-left hover:border-[var(--accent-primary)] transition-colors"
+                        >
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg"
                                 alt="Google Play"
@@ -73,7 +79,7 @@ const Home = () => {
                                 <span className="block text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">Get it on</span>
                                 <span className="block text-sm font-bold text-[var(--text-primary)]">Google Play</span>
                             </span>
-                        </button>
+                        </a>
                         <button className="surface-card rounded-xl px-5 py-3 inline-flex items-center gap-3 text-left hover:border-[var(--accent-primary)] transition-colors">
                             <Apple size={20} className="text-[var(--text-primary)]" />
                             <span>

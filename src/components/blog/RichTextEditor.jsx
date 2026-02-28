@@ -15,6 +15,7 @@ import EditorToolbar from './EditorToolbar';
 import TocAnchor from './tiptap/TocAnchor';
 import EnhancedImage from './tiptap/EnhancedImage';
 import MediaLibraryModal from './MediaLibraryModal';
+import { PLAY_STORE_APP_URL } from '../../constants/externalLinks';
 import './editor.css'; // We'll create this for custom TipTap styles
 
 const slugifyForId = (value) =>
@@ -285,7 +286,7 @@ const RichTextEditor = ({
         editor
             .chain()
             .focus()
-            .insertContent(' <a class="dodohabit-install-btn" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">Install</a> ')
+            .insertContent(` <a class="dodohabit-install-btn" href="${PLAY_STORE_APP_URL}" target="_blank" rel="noopener noreferrer">Install</a> `)
             .run();
     }, [editor]);
 
